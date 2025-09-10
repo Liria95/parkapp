@@ -9,12 +9,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styled from 'styled-components/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// Dimensiones de la pantalla
+// Dimensiones
 const { width, height } = Dimensions.get('window');
 const scale = width / 375;
 
-// Colores del sistema de diseño
+// Colores
 const colors = {
   primary: '#2E7BDC',
   green: '#72C8A8',
@@ -27,131 +29,34 @@ const colors = {
   secondary: '#6C757D',
 };
 
-// Styled Components
-const Container = styled.SafeAreaView`
-  flex: 1;
-  background-color: ${colors.lightGray};
-`;
+// Tipado navegación
+type RootStackParamList = {
+  AdminDashboard: undefined;
+};
 
-const Header = styled.View`
-  background-color: ${colors.primary};
-  padding: ${height * 0.06}px 5%;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-`;
+type AdminDashboardNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'AdminDashboard'
+>;
 
-const HeaderContent = styled.View`
-  flex: 1;
-`;
+// Styled Components (igual que antes)
+const Container = styled.SafeAreaView`flex: 1; background-color: ${colors.lightGray};`;
+const Header = styled.View`background-color: ${colors.primary}; padding: ${height * 0.06}px 5%; flex-direction: row; justify-content: space-between; align-items: center;`;
+const HeaderContent = styled.View`flex: 1;`;
+const HeaderTitle = styled.Text`color: ${colors.white}; font-size: ${18 * scale}px; font-weight: bold;`;
+const HeaderSubtitle = styled.Text`color: ${colors.white}; font-size: ${14 * scale}px; opacity: 0.9; margin-top: ${2 * scale}px;`;
+const MenuButton = styled.TouchableOpacity`width: ${40 * scale}px; height: ${40 * scale}px; background-color: rgba(255, 255, 255, 0.2); border-radius: ${20 * scale}px; justify-content: center; align-items: center;`;
+const StatsGrid = styled.View`flex-direction: row; flex-wrap: wrap; padding: 5%; gap: ${12 * scale}px;`;
+const StatCard = styled.View<{ bgColor: string }>`background-color: ${(props) => props.bgColor}; border-radius: ${12 * scale}px; padding: ${16 * scale}px; width: ${(width - width * 0.1 - 12 * scale) / 2}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px; align-items: center;`;
+const StatNumber = styled.Text`font-size: ${24 * scale}px; font-weight: bold; color: ${colors.white}; text-align: center;`;
+const StatLabel = styled.Text`font-size: ${12 * scale}px; color: ${colors.white}; text-align: center; margin-top: ${4 * scale}px;`;
+const SectionCard = styled.View`background-color: ${colors.white}; margin: 0 5% 15px 5%; border-radius: ${12 * scale}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px;`;
+const SectionHeader = styled.View`padding: ${16 * scale}px ${20 * scale}px ${12 * scale}px ${20 * scale}px; border-bottom-width: 1px; border-bottom-color: #F0F0F0;`;
+const SectionTitle = styled.Text`font-size: ${16 * scale}px; font-weight: bold; color: ${colors.dark};`;
+const BottomNavigation = styled.View`flex-direction: row; background-color: ${colors.white}; padding: ${12 * scale}px 0; border-top-width: 1px; border-top-color: #E5E5E5; elevation: 8; shadow-color: #000; shadow-offset: 0px -2px; shadow-opacity: 0.1; shadow-radius: 4px;`;
+const NavItem = styled.TouchableOpacity`flex: 1; align-items: center; justify-content: center; padding-vertical: ${8 * scale}px;`;
 
-const HeaderTitle = styled.Text`
-  color: ${colors.white};
-  font-size: ${18 * scale}px;
-  font-weight: bold;
-`;
-
-const HeaderSubtitle = styled.Text`
-  color: ${colors.white};
-  font-size: ${14 * scale}px;
-  opacity: 0.9;
-  margin-top: ${2 * scale}px;
-`;
-
-const MenuButton = styled.TouchableOpacity`
-  width: ${40 * scale}px;
-  height: ${40 * scale}px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: ${20 * scale}px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const StatsGrid = styled.View`
-  flex-direction: row;
-  flex-wrap: wrap;
-  padding: 5%;
-  gap: ${12 * scale}px;
-`;
-
-const StatCard = styled.View<{ bgColor: string }>`
-  background-color: ${(props) => props.bgColor};
-  border-radius: ${12 * scale}px;
-  padding: ${16 * scale}px;
-  width: ${(width - width * 0.1 - 12 * scale) / 2}px;
-  elevation: 2;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.08;
-  shadow-radius: 4px;
-  align-items: center;
-`;
-
-const StatNumber = styled.Text`
-  font-size: ${24 * scale}px;
-  font-weight: bold;
-  color: ${colors.white};
-  text-align: center;
-`;
-
-const StatLabel = styled.Text`
-  font-size: ${12 * scale}px;
-  color: ${colors.white};
-  text-align: center;
-  margin-top: ${4 * scale}px;
-`;
-
-const SectionCard = styled.View`
-  background-color: ${colors.white};
-  margin: 0 5% 15px 5%;
-  border-radius: ${12 * scale}px;
-  elevation: 2;
-  shadow-color: #000;
-  shadow-offset: 0px 2px;
-  shadow-opacity: 0.08;
-  shadow-radius: 4px;
-`;
-
-const SectionHeader = styled.View`
-  padding: ${16 * scale}px ${20 * scale}px ${12 * scale}px ${20 * scale}px;
-  border-bottom-width: 1px;
-  border-bottom-color: #F0F0F0;
-`;
-
-const SectionTitle = styled.Text`
-  font-size: ${16 * scale}px;
-  font-weight: bold;
-  color: ${colors.dark};
-`;
-
-const BottomNavigation = styled.View`
-  flex-direction: row;
-  background-color: ${colors.white};
-  padding: ${12 * scale}px 0;
-  border-top-width: 1px;
-  border-top-color: #E5E5E5;
-  elevation: 8;
-  shadow-color: #000;
-  shadow-offset: 0px -2px;
-  shadow-opacity: 0.1;
-  shadow-radius: 4px;
-`;
-
-const NavItem = styled.TouchableOpacity`
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding-vertical: ${8 * scale}px;
-`;
-
-interface NavigationProp {
-  navigate: (screen: string) => void;
-}
-
-interface AdminDashboardProps {
-  navigation: NavigationProp;
-}
-
+// Tipos de datos
 interface ActiveUser {
   id: string;
   name: string;
@@ -168,7 +73,8 @@ interface DashboardStats {
   violations: number;
 }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigation }) => {
+const AdminDashboard: React.FC = () => {
+  const navigation = useNavigation<AdminDashboardNavigationProp>();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'espacios' | 'usuarios'>('dashboard');
 
   const [stats] = useState<DashboardStats>({
@@ -197,17 +103,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigation }) => {
   };
 
   const renderUserItem = ({ item }: { item: ActiveUser }) => (
-    <View
-      style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F5F5F5',
-      }}
-    >
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}>
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 14 * scale, fontWeight: 'bold', color: colors.dark, marginBottom: 4 }}>
           {item.plate} | ${item.balance.toFixed(2)}
@@ -217,10 +113,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigation }) => {
         </Text>
         <Text style={{ fontSize: 12 * scale, color: colors.gray }}>{item.name}</Text>
       </View>
-      <NavItem
-        style={{ backgroundColor: colors.primary, paddingHorizontal: 16 * scale, paddingVertical: 6 * scale, borderRadius: 4 * scale }}
-        onPress={() => handleUserAction(item.id)}
-      >
+      <NavItem style={{ backgroundColor: colors.primary, paddingHorizontal: 16 * scale, paddingVertical: 6 * scale, borderRadius: 4 * scale }} onPress={() => handleUserAction(item.id)}>
         <Text style={{ color: colors.white, fontSize: 12 * scale, fontWeight: 'bold' }}>VER</Text>
       </NavItem>
     </View>

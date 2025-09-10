@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   TouchableOpacity,
   TextInput,
   Alert,
@@ -14,22 +13,20 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styled from 'styled-components/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// Tipos TypeScript
-interface NavigationProp {
-  navigate: (screen: string) => void;
-}
+// Definir las pantallas de tu stack
+type RootStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  AdminDashboard: undefined;
+};
 
-interface LoginScreenProps {
-  navigation: NavigationProp;
-}
-
-interface MockUser {
-  email: string;
-  password: string;
-  type: 'admin' | 'user';
-  name: string;
-}
+type LoginScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Login'
+>;
 
 // Colores del sistema de diseño
 const colors = {
@@ -44,7 +41,7 @@ const colors = {
   gray: '#6C757D',
 };
 
-// Componentes estilizados con styled-components
+// Componentes estilizados
 const Container = styled.SafeAreaView`
   flex: 1;
   background-color: ${colors.lightGray};
@@ -68,7 +65,9 @@ const FormContainer = styled.View`
   flex: 1;
 `;
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const LoginScreen: React.FC = () => {
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [emailError, setEmailError] = useState<string>('');
@@ -84,12 +83,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   // Validación del formulario
   const validateForm = (): boolean => {
     let isValid = true;
-    
-    // Reset errores
     setEmailError('');
     setPasswordError('');
 
-    // Validar email
     if (!email.trim()) {
       setEmailError('El email es requerido');
       isValid = false;
@@ -98,7 +94,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       isValid = false;
     }
 
-    // Validar contraseña
     if (!password.trim()) {
       setPasswordError('La contraseña es requerida');
       isValid = false;
@@ -112,36 +107,32 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   const handleLogin = (): void => {
     if (validateForm()) {
-      // Admins pre-cargados en el sistema
-      const SYSTEM_ADMINS: MockUser[] = [
-        { 
-          email: 'admin@parkapp.com', 
-          password: 'admin123', 
-          type: 'admin', 
-          name: 'Super Administrador' 
+      const SYSTEM_ADMINS = [
+        {
+          email: 'admin@parkapp.com',
+          password: 'admin123',
+          type: 'admin',
+          name: 'Super Administrador',
         },
-        { 
-          email: 'admin@gmail.com', 
-          password: 'admin123', 
-          type: 'admin', 
-          name: 'Admin Principal' 
+        {
+          email: 'admin@gmail.com',
+          password: 'admin123',
+          type: 'admin',
+          name: 'Admin Principal',
         },
       ];
-      
-      // Verificar si es un admin del sistema
-      const adminUser = SYSTEM_ADMINS.find(admin => 
-        admin.email === email && admin.password === password
+
+      const adminUser = SYSTEM_ADMINS.find(
+        admin => admin.email === email && admin.password === password
       );
-      
+
       if (adminUser) {
-        // Es un administrador - navegar al dashboard
         console.log('Login Admin exitoso:', adminUser.name);
         navigation.navigate('AdminDashboard');
       } else {
-        // Es un usuario final (cualquier otro email/password válido)
         console.log('Login Usuario Final exitoso');
         Alert.alert(
-          'Login exitoso', 
+          'Login exitoso',
           `Bienvenido Usuario Final!\nEmail: ${email}\nMapa de usuario aún no implementado.`,
           [{ text: 'OK' }]
         );
@@ -155,17 +146,17 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
   return (
     <Container>
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
           {/* Logo */}
           <LogoContainer>
-            <Image 
+            <Image
               source={require('../assets/logo.png')}
               style={styles.logoImage}
               resizeMode="contain"
@@ -178,14 +169,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Campo Email */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Email</Text>
-              <View style={[
-                styles.inputWrapper, 
-                emailError ? styles.inputError : null
-              ]}>
-                <Ionicons 
-                  name="mail-outline" 
-                  size={20} 
-                  color={emailError ? colors.danger : colors.gray} 
+              <View
+                style={[
+                  styles.inputWrapper,
+                  emailError ? styles.inputError : null,
+                ]}
+              >
+                <Ionicons
+                  name="mail-outline"
+                  size={20}
+                  color={emailError ? colors.danger : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -209,14 +202,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {/* Campo Contraseña */}
             <View style={styles.inputContainer}>
               <Text style={styles.inputLabel}>Contraseña</Text>
-              <View style={[
-                styles.inputWrapper, 
-                passwordError ? styles.inputError : null
-              ]}>
-                <Ionicons 
-                  name="lock-closed-outline" 
-                  size={20} 
-                  color={passwordError ? colors.danger : colors.gray} 
+              <View
+                style={[
+                  styles.inputWrapper,
+                  passwordError ? styles.inputError : null,
+                ]}
+              >
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color={passwordError ? colors.danger : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -231,14 +226,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
                 >
-                  <Ionicons 
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
-                    size={20} 
-                    color={colors.gray} 
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={20}
+                    color={colors.gray}
                   />
                 </TouchableOpacity>
               </View>
@@ -248,20 +243,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             </View>
 
             {/* Botón Iniciar Sesión */}
-            <TouchableOpacity 
-              style={styles.loginButton}
-              onPress={handleLogin}
-            >
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
               <Text style={styles.loginButtonText}>Iniciar sesión</Text>
             </TouchableOpacity>
 
             {/* Link a Registro */}
-            <TouchableOpacity 
-              style={styles.registerLink}
-              onPress={goToRegister}
-            >
+            <TouchableOpacity style={styles.registerLink} onPress={goToRegister}>
               <Text style={styles.registerText}>
-                ¿No tienes cuenta? {' '}
+                ¿No tienes cuenta?{' '}
                 <Text style={styles.registerTextBold}>Registrarse</Text>
               </Text>
             </TouchableOpacity>
