@@ -15,31 +15,21 @@ import { Ionicons } from '@expo/vector-icons';
 import styled from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import {colors, AUTH_ROUTES} from '../utils';
 
-// Definir las pantallas de tu stack
+
+// Pantallas del stack
 type RootStackParamList = {
-  Login: undefined;
-  Register: undefined;
-  AdminDashboard: undefined;
+  [AUTH_ROUTES.LOGIN]: undefined;
+  [AUTH_ROUTES.REGISTER]: undefined;
+  [AUTH_ROUTES.ADMINDASHBOARD]: undefined;
+  [AUTH_ROUTES.ADMINPANEL]: undefined;
 };
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  'Login'
->;
-
-// Colores del sistema de diseño
-const colors = {
-  primary: '#2E7BDC',
-  secondary: '#5CB3CC',
-  accent: '#72C8A8',
-  warning: '#FFC857',
-  danger: '#E74C3C',
-  dark: '#2C3E50',
-  white: '#FFFFFF',
-  lightGray: '#F8F9FA',
-  gray: '#6C757D',
-};
+  typeof AUTH_ROUTES.LOGIN
+>
 
 // Componentes estilizados
 const Container = styled.SafeAreaView`
@@ -128,7 +118,7 @@ const LoginScreen: React.FC = () => {
 
       if (adminUser) {
         console.log('Login Admin exitoso:', adminUser.name);
-        navigation.navigate('AdminDashboard');
+        navigation.navigate(AUTH_ROUTES.ADMINDASHBOARD); 
       } else {
         console.log('Login Usuario Final exitoso');
         Alert.alert(
@@ -141,7 +131,7 @@ const LoginScreen: React.FC = () => {
   };
 
   const goToRegister = (): void => {
-    navigation.navigate('Register');
+    navigation.navigate(AUTH_ROUTES.REGISTER);
   };
 
   return (
@@ -178,7 +168,7 @@ const LoginScreen: React.FC = () => {
                 <Ionicons
                   name="mail-outline"
                   size={20}
-                  color={emailError ? colors.danger : colors.gray}
+                  color={emailError ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -211,7 +201,7 @@ const LoginScreen: React.FC = () => {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={passwordError ? colors.danger : colors.gray}
+                  color={passwordError ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -269,9 +259,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   logoImage: {
-    width: 100,
-    height: 100,
-    marginBottom: 20,
+    width: 200,
+    height: 200,
+    marginBottom: 10,
     borderRadius: 50,
   },
   inputContainer: {
@@ -299,7 +289,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   inputError: {
-    borderColor: colors.danger,
+    borderColor: colors.red,
     borderWidth: 2,
   },
   inputIcon: {
@@ -314,7 +304,7 @@ const styles = StyleSheet.create({
     padding: 5,
   },
   errorText: {
-    color: colors.danger,
+    color: colors.red,
     fontSize: 12,
     marginTop: 5,
     marginLeft: 5,

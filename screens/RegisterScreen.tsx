@@ -15,6 +15,8 @@ import { Ionicons } from '@expo/vector-icons';
 import styled from 'styled-components/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
+import {colors} from '../utils';
+
 
 // Tipos para navegación
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
@@ -43,18 +45,6 @@ interface FormErrors {
   confirmPassword?: string;
 }
 
-// Colores del sistema de diseño
-const colors = {
-  primary: '#2E7BDC',
-  secondary: '#5CB3CC',
-  accent: '#72C8A8',
-  warning: '#FFC857',
-  danger: '#E74C3C',
-  dark: '#2C3E50',
-  white: '#FFFFFF',
-  lightGray: '#F8F9FA',
-  gray: '#6C757D',
-};
 
 // Styled Components
 const Container = styled.SafeAreaView`
@@ -218,7 +208,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <Ionicons
                   name="person-outline"
                   size={20}
-                  color={errors.fullName ? colors.danger : colors.gray}
+                  color={errors.fullName ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -249,7 +239,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <Ionicons
                   name="mail-outline"
                   size={20}
-                  color={errors.email ? colors.danger : colors.gray}
+                  color={errors.email ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -281,7 +271,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <Ionicons
                   name="call-outline"
                   size={20}
-                  color={errors.phone ? colors.danger : colors.gray}
+                  color={errors.phone ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -312,7 +302,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={errors.password ? colors.danger : colors.gray}
+                  color={errors.password ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -354,7 +344,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ navigation }) => {
                 <Ionicons
                   name="lock-closed-outline"
                   size={20}
-                  color={errors.confirmPassword ? colors.danger : colors.gray}
+                  color={errors.confirmPassword ? colors.red : colors.gray}
                   style={styles.inputIcon}
                 />
                 <TextInput
@@ -433,11 +423,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
-  inputError: { borderColor: colors.danger, borderWidth: 2 },
+  inputError: { borderColor: colors.red, borderWidth: 2 },
   inputIcon: { marginRight: 10 },
   textInput: { flex: 1, fontSize: 16, color: colors.dark },
   eyeIcon: { padding: 5 },
-  errorText: { color: colors.danger, fontSize: 12, marginTop: 5, marginLeft: 5 },
+  errorText: { color: colors.red, fontSize: 12, marginTop: 5, marginLeft: 5 },
   registerButton: {
     backgroundColor: colors.primary,
     paddingVertical: 15,

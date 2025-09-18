@@ -4,57 +4,41 @@ import {
   Text,
   ScrollView,
   FlatList,
-  Alert,
-  Dimensions,
+  Alert
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styled from 'styled-components/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-// Dimensiones
-const { width, height } = Dimensions.get('window');
-const scale = width / 375;
-
-// Colores
-const colors = {
-  primary: '#2E7BDC',
-  green: '#72C8A8',
-  yellow: '#FFC857',
-  red: '#E74C3C',
-  dark: '#2C3E50',
-  white: '#FFFFFF',
-  lightGray: '#F8F9FA',
-  gray: '#6C757D',
-  secondary: '#6C757D',
-};
+import {colors } from '../utils';
+import { DIMENSIONES, AUTH_ROUTES } from '../utils';
 
 // Tipado navegación
 type RootStackParamList = {
-  AdminDashboard: undefined;
+[AUTH_ROUTES.ADMINDASHBOARD]: undefined;
 };
 
 type AdminDashboardNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  'AdminDashboard'
+  typeof AUTH_ROUTES.ADMINDASHBOARD
 >;
 
 // Styled Components (igual que antes)
 const Container = styled.SafeAreaView`flex: 1; background-color: ${colors.lightGray};`;
-const Header = styled.View`background-color: ${colors.primary}; padding: ${height * 0.06}px 5%; flex-direction: row; justify-content: space-between; align-items: center;`;
+const Header = styled.View`background-color: ${colors.primary}; padding: ${ DIMENSIONES.HEIGHT * 0.06}px 5%; flex-direction: row; justify-content: space-between; align-items: center;`;
 const HeaderContent = styled.View`flex: 1;`;
-const HeaderTitle = styled.Text`color: ${colors.white}; font-size: ${18 * scale}px; font-weight: bold;`;
-const HeaderSubtitle = styled.Text`color: ${colors.white}; font-size: ${14 * scale}px; opacity: 0.9; margin-top: ${2 * scale}px;`;
-const MenuButton = styled.TouchableOpacity`width: ${40 * scale}px; height: ${40 * scale}px; background-color: rgba(255, 255, 255, 0.2); border-radius: ${20 * scale}px; justify-content: center; align-items: center;`;
-const StatsGrid = styled.View`flex-direction: row; flex-wrap: wrap; padding: 5%; gap: ${12 * scale}px;`;
-const StatCard = styled.View<{ bgColor: string }>`background-color: ${(props) => props.bgColor}; border-radius: ${12 * scale}px; padding: ${16 * scale}px; width: ${(width - width * 0.1 - 12 * scale) / 2}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px; align-items: center;`;
-const StatNumber = styled.Text`font-size: ${24 * scale}px; font-weight: bold; color: ${colors.white}; text-align: center;`;
-const StatLabel = styled.Text`font-size: ${12 * scale}px; color: ${colors.white}; text-align: center; margin-top: ${4 * scale}px;`;
-const SectionCard = styled.View`background-color: ${colors.white}; margin: 0 5% 15px 5%; border-radius: ${12 * scale}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px;`;
-const SectionHeader = styled.View`padding: ${16 * scale}px ${20 * scale}px ${12 * scale}px ${20 * scale}px; border-bottom-width: 1px; border-bottom-color: #F0F0F0;`;
-const SectionTitle = styled.Text`font-size: ${16 * scale}px; font-weight: bold; color: ${colors.dark};`;
-const BottomNavigation = styled.View`flex-direction: row; background-color: ${colors.white}; padding: ${12 * scale}px 0; border-top-width: 1px; border-top-color: #E5E5E5; elevation: 8; shadow-color: #000; shadow-offset: 0px -2px; shadow-opacity: 0.1; shadow-radius: 4px;`;
-const NavItem = styled.TouchableOpacity`flex: 1; align-items: center; justify-content: center; padding-vertical: ${8 * scale}px;`;
+const HeaderTitle = styled.Text`color: ${colors.white}; font-size: ${18 * DIMENSIONES.SCALE}px; font-weight: bold;`;
+const HeaderSubtitle = styled.Text`color: ${colors.white}; font-size: ${14 * DIMENSIONES.SCALE}px; opacity: 0.9; margin-top: ${2 * DIMENSIONES.SCALE}px;`;
+const MenuButton = styled.TouchableOpacity`width: ${40 * DIMENSIONES.SCALE}px; height: ${40 * DIMENSIONES.SCALE}px; background-color: rgba(255, 255, 255, 0.2); border-radius: ${20 * DIMENSIONES.SCALE}px; justify-content: center; align-items: center;`;
+const StatsGrid = styled.View`flex-direction: row; flex-wrap: wrap; padding: 5%; gap: ${12 * DIMENSIONES.SCALE}px;`;
+const StatCard = styled.View<{ bgColor: string }>`background-color: ${(props) => props.bgColor}; border-radius: ${12 * DIMENSIONES.SCALE}px; padding: ${16 * DIMENSIONES.SCALE}px; width: ${(DIMENSIONES.WIDTH - DIMENSIONES.WIDTH * 0.1 - 12 * DIMENSIONES.SCALE) / 2}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px; align-items: center;`;
+const StatNumber = styled.Text`font-size: ${24 * DIMENSIONES.SCALE}px; font-weight: bold; color: ${colors.white}; text-align: center;`;
+const StatLabel = styled.Text`font-size: ${12 * DIMENSIONES.SCALE}px; color: ${colors.white}; text-align: center; margin-top: ${4 * DIMENSIONES.SCALE}px;`;
+const SectionCard = styled.View`background-color: ${colors.white}; margin: 0 5% 15px 5%; border-radius: ${12 * DIMENSIONES.SCALE}px; elevation: 2; shadow-color: #000; shadow-offset: 0px 2px; shadow-opacity: 0.08; shadow-radius: 4px;`;
+const SectionHeader = styled.View`padding: ${16 * DIMENSIONES.SCALE}px ${20 * DIMENSIONES.SCALE}px ${12 * DIMENSIONES.SCALE}px ${20 * DIMENSIONES.SCALE}px; border-bottom-width: 1px; border-bottom-color: #F0F0F0;`;
+const SectionTitle = styled.Text`font-size: ${16 * DIMENSIONES.SCALE}px; font-weight: bold; color: ${colors.dark};`;
+const BottomNavigation = styled.View`flex-direction: row; background-color: ${colors.white}; padding: ${12 * DIMENSIONES.SCALE}px 0; border-top-width: 1px; border-top-color: #E5E5E5; elevation: 8; shadow-color: #000; shadow-offset: 0px -2px; shadow-opacity: 0.1; shadow-radius: 4px;`;
+const NavItem = styled.TouchableOpacity`flex: 1; align-items: center; justify-content: center; padding-vertical: ${8 * DIMENSIONES.SCALE}px;`;
 
 // Tipos de datos
 interface ActiveUser {
@@ -75,7 +59,7 @@ interface DashboardStats {
 
 const AdminDashboard: React.FC = () => {
   const navigation = useNavigation<AdminDashboardNavigationProp>();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'espacios' | 'usuarios'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'espacios' | 'usuarios'| 'adminpanel'>('dashboard');
 
   const [stats] = useState<DashboardStats>({
     occupiedSpaces: 156,
@@ -97,24 +81,35 @@ const AdminDashboard: React.FC = () => {
     Alert.alert('Menú', 'Gestión de Estacionamientos\nTransacciones y Saldo\nInfracciones');
   };
 
-  const handleNavigation = (section: 'dashboard' | 'espacios' | 'usuarios') => {
+  const handleNavigation = (section: 'dashboard' | 'espacios' | 'usuarios' | 'adminpanel') => {
     setActiveTab(section);
-    Alert.alert('Navegación', `Ir a sección: ${section}`);
+    //Alert.alert('Navegación', `Ir a sección: ${section}`);
+    switch (section) {
+      case 'dashboard':
+        navigation.navigate(AUTH_ROUTES.ADMINDASHBOARD);
+        break;
+      case 'adminpanel':
+        navigation.navigate(AUTH_ROUTES.ADMINPANEL);
+        break;
+      default:
+        Alert.alert('Navegación', `Sección no encontrada: ${section}`);
+  }
+
   };
 
   const renderUserItem = ({ item }: { item: ActiveUser }) => (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' }}>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 14 * scale, fontWeight: 'bold', color: colors.dark, marginBottom: 4 }}>
+        <Text style={{ fontSize: 14 * DIMENSIONES.SCALE, fontWeight: 'bold', color: colors.dark, marginBottom: 4 }}>
           {item.plate} | ${item.balance.toFixed(2)}
         </Text>
-        <Text style={{ fontSize: 12 * scale, color: colors.primary, marginBottom: 4 }}>
+        <Text style={{ fontSize: 12 * DIMENSIONES.SCALE, color: colors.primary, marginBottom: 4 }}>
           {item.status === 'active' && item.currentLocation ? `ACTUALMENTE: ${item.currentLocation}` : 'SIN ACTIVIDAD'}
         </Text>
-        <Text style={{ fontSize: 12 * scale, color: colors.gray }}>{item.name}</Text>
+        <Text style={{ fontSize: 12 * DIMENSIONES.SCALE, color: colors.gray }}>{item.name}</Text>
       </View>
-      <NavItem style={{ backgroundColor: colors.primary, paddingHorizontal: 16 * scale, paddingVertical: 6 * scale, borderRadius: 4 * scale }} onPress={() => handleUserAction(item.id)}>
-        <Text style={{ color: colors.white, fontSize: 12 * scale, fontWeight: 'bold' }}>VER</Text>
+      <NavItem style={{ backgroundColor: colors.primary, paddingHorizontal: 16 * DIMENSIONES.SCALE, paddingVertical: 6 * DIMENSIONES.SCALE, borderRadius: 4 * DIMENSIONES.SCALE }} onPress={() => handleUserAction(item.id)}>
+        <Text style={{ color: colors.white, fontSize: 12 * DIMENSIONES.SCALE, fontWeight: 'bold' }}>VER</Text>
       </NavItem>
     </View>
   );
@@ -127,7 +122,7 @@ const AdminDashboard: React.FC = () => {
           <HeaderSubtitle>Dashboard General</HeaderSubtitle>
         </HeaderContent>
         <MenuButton onPress={handleMenuPress}>
-          <Ionicons name="menu" size={20 * scale} color={colors.white} />
+          <Ionicons name="menu" size={20 * DIMENSIONES.SCALE} color={colors.white} />
         </MenuButton>
       </Header>
 
@@ -158,9 +153,9 @@ const AdminDashboard: React.FC = () => {
           <SectionHeader>
             <SectionTitle>Gráfico de ocupación</SectionTitle>
           </SectionHeader>
-          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 30 * scale }}>
-            <Ionicons name="bar-chart-outline" size={50 * scale} color={colors.secondary} />
-            <Text style={{ fontSize: 14 * scale, color: colors.gray, marginTop: 8, textAlign: 'center' }}>Actividad en Tiempo Real</Text>
+          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 30 * DIMENSIONES.SCALE }}>
+            <Ionicons name="bar-chart-outline" size={50 * DIMENSIONES.SCALE} color={colors.secondary} />
+            <Text style={{ fontSize: 14 * DIMENSIONES.SCALE, color: colors.gray, marginTop: 8, textAlign: 'center' }}>Actividad en Tiempo Real</Text>
           </View>
         </SectionCard>
 
@@ -173,17 +168,21 @@ const AdminDashboard: React.FC = () => {
       </ScrollView>
 
       <BottomNavigation>
+        <NavItem onPress={() => handleNavigation('adminpanel')}>
+          <Ionicons name="briefcase-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'adminpanel' ? colors.primary : colors.gray} />
+          <Text style={{ fontSize: 10 * DIMENSIONES.SCALE, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'adminpanel' ? colors.primary : colors.gray }}>ADMIN</Text>
+        </NavItem>
         <NavItem onPress={() => handleNavigation('dashboard')}>
-          <Ionicons name="grid-outline" size={22 * scale} color={activeTab === 'dashboard' ? colors.primary : colors.gray} />
-          <Text style={{ fontSize: 10 * scale, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'dashboard' ? colors.primary : colors.gray }}>DASHBOARD</Text>
+          <Ionicons name="grid-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'dashboard' ? colors.primary : colors.gray} />
+          <Text style={{ fontSize: 10 * DIMENSIONES.SCALE, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'dashboard' ? colors.primary : colors.gray }}>DASHBOARD</Text>
         </NavItem>
         <NavItem onPress={() => handleNavigation('espacios')}>
-          <Ionicons name="car-outline" size={22 * scale} color={activeTab === 'espacios' ? colors.primary : colors.gray} />
-          <Text style={{ fontSize: 10 * scale, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'espacios' ? colors.primary : colors.gray }}>ESPACIOS</Text>
+          <Ionicons name="car-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'espacios' ? colors.primary : colors.gray} />
+          <Text style={{ fontSize: 10 * DIMENSIONES.SCALE, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'espacios' ? colors.primary : colors.gray }}>ESPACIOS</Text>
         </NavItem>
         <NavItem onPress={() => handleNavigation('usuarios')}>
-          <Ionicons name="people-outline" size={22 * scale} color={activeTab === 'usuarios' ? colors.primary : colors.gray} />
-          <Text style={{ fontSize: 10 * scale, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'usuarios' ? colors.primary : colors.gray }}>USUARIOS</Text>
+          <Ionicons name="people-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'usuarios' ? colors.primary : colors.gray} />
+          <Text style={{ fontSize: 10 * DIMENSIONES.SCALE, fontWeight: '500', marginTop: 4, textAlign: 'center', color: activeTab === 'usuarios' ? colors.primary : colors.gray }}>USUARIOS</Text>
         </NavItem>
       </BottomNavigation>
     </Container>
