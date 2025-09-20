@@ -1,343 +1,118 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Image,
-} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import styled from 'styled-components/native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import {colors, AUTH_ROUTES} from '../utils';
+import { Alert } from 'react-native';
 
+// Componentes reutilizables
+import AuthContainer from '../components/auth/AuthContainer';
+import FormContainer from '../components/common/FormContainer';
+import InputField from '../components/common/InputField';
+import AuthButton from '../components/common/AuthButton';
+import LogoHeader from '../components/common/LogoHeader';
+import LinkButton from '../components/common/LinkButton';
 
-// Pantallas del stack
-type RootStackParamList = {
-  [AUTH_ROUTES.LOGIN]: undefined;
-  [AUTH_ROUTES.REGISTER]: undefined;
-  [AUTH_ROUTES.ADMINDASHBOARD]: undefined;
-  [AUTH_ROUTES.ADMINPANEL]: undefined;
-};
+// Hooks y servicios
+import { useFormValidation } from '../hooks/useFormValidation';
+import { AuthService } from '../services/AuthService';
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
-  typeof AUTH_ROUTES.LOGIN
->
+// Tipos
+interface NavigationProp {
+  navigate: (screen: string) => void;
+}
 
-// Componentes estilizados
-const Container = styled.SafeAreaView`
-  flex: 1;
-  background-color: ${colors.lightGray};
-`;
+interface LoginScreenProps {
+  navigation: NavigationProp;
+}
 
-const LogoContainer = styled.View`
-  align-items: center;
-  margin-top: 80px;
-  margin-bottom: 60px;
-`;
-
-const AppTitle = styled.Text`
-  font-size: 28px;
-  font-weight: bold;
-  color: ${colors.primary};
-  text-align: center;
-`;
-
-const FormContainer = styled.View`
-  padding: 0 40px;
-  flex: 1;
-`;
-
-const LoginScreen: React.FC = () => {
-  const navigation = useNavigation<LoginScreenNavigationProp>();
-
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
-  const [passwordError, setPasswordError] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  // Validación de email
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const { errors, validateForm, clearError } = useFormValidation();
 
-  // Validación del formulario
-  const validateForm = (): boolean => {
-    let isValid = true;
-    setEmailError('');
-    setPasswordError('');
+  const handleLogin = async (): Promise<void> => {
+    const isValid = validateForm(
+      { email, password },
+      {
+        email: { required: true, email: true },
+        password: { required: true, minLength: 6 },
+      }
+    );
 
-    if (!email.trim()) {
-      setEmailError('El email es requerido');
-      isValid = false;
-    } else if (!validateEmail(email)) {
-      setEmailError('Formato de email inválido');
-      isValid = false;
-    }
-
-    if (!password.trim()) {
-      setPasswordError('La contraseña es requerida');
-      isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError('La contraseña debe tener al menos 6 caracteres');
-      isValid = false;
-    }
-
-    return isValid;
-  };
-
-  const handleLogin = (): void => {
-    if (validateForm()) {
-      const SYSTEM_ADMINS = [
-        {
-          email: 'admin@parkapp.com',
-          password: 'admin123',
-          type: 'admin',
-          name: 'Super Administrador',
-        },
-        {
-          email: 'admin@gmail.com',
-          password: 'admin123',
-          type: 'admin',
-          name: 'Admin Principal',
-        },
-      ];
-
-      const adminUser = SYSTEM_ADMINS.find(
-        admin => admin.email === email && admin.password === password
-      );
-
-      if (adminUser) {
-        console.log('Login Admin exitoso:', adminUser.name);
-        navigation.navigate(AUTH_ROUTES.ADMINDASHBOARD); 
-      } else {
-        console.log('Login Usuario Final exitoso');
-        Alert.alert(
-          'Login exitoso',
-          `Bienvenido Usuario Final!\nEmail: ${email}\nMapa de usuario aún no implementado.`,
-          [{ text: 'OK' }]
-        );
+    if (isValid) {
+      setLoading(true);
+      
+      try {
+        const result = await AuthService.login(email, password);
+        
+        if (result.success && result.isAdmin) {
+          console.log('Login Admin exitoso:', result.user?.name);
+          navigation.navigate('AdminDashboard');
+        } else if (result.success) {
+          Alert.alert('Login exitoso', result.message, [{ text: 'OK' }]);
+        } else {
+          Alert.alert('Error de login', result.message, [{ text: 'OK' }]);
+        }
+      } catch (error) {
+        Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
+      } finally {
+        setLoading(false);
       }
     }
   };
 
-  const goToRegister = (): void => {
-    navigation.navigate(AUTH_ROUTES.REGISTER);
-  };
-
   return (
-    <Container>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Logo */}
-          <LogoContainer>
-            <Image
-              source={require('../assets/logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <AppTitle>ParkApp</AppTitle>
-          </LogoContainer>
+    <AuthContainer>
+      <LogoHeader title="ParkApp" />
+      
+      <FormContainer>
+        <InputField
+          label="Email"
+          iconName="mail-outline"
+          placeholder="Ingresá tu email"
+          value={email}
+          onChangeText={(text: string) => {
+            setEmail(text);
+            clearError('email');
+          }}
+          error={errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
 
-          {/* Formulario */}
-          <FormContainer>
-            {/* Campo Email */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  emailError ? styles.inputError : null,
-                ]}
-              >
-                <Ionicons
-                  name="mail-outline"
-                  size={20}
-                  color={emailError ? colors.red : colors.gray}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Ingresá tu email"
-                  value={email}
-                  onChangeText={(text: string) => {
-                    setEmail(text);
-                    if (emailError) setEmailError('');
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-              {emailError ? (
-                <Text style={styles.errorText}>{emailError}</Text>
-              ) : null}
-            </View>
+        <InputField
+          label="Contraseña"
+          iconName="lock-closed-outline"
+          placeholder="Ingresá tu contraseña"
+          value={password}
+          onChangeText={(text: string) => {
+            setPassword(text);
+            clearError('password');
+          }}
+          error={errors.password}
+          secureTextEntry={!showPassword}
+          showPasswordToggle={true}
+          isPasswordVisible={showPassword}
+          onTogglePassword={() => setShowPassword(!showPassword)}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
 
-            {/* Campo Contraseña */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Contraseña</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  passwordError ? styles.inputError : null,
-                ]}
-              >
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color={passwordError ? colors.red : colors.gray}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={[styles.textInput, { flex: 1 }]}
-                  placeholder="Ingresá tu contraseña"
-                  value={password}
-                  onChangeText={(text: string) => {
-                    setPassword(text);
-                    if (passwordError) setPasswordError('');
-                  }}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={20}
-                    color={colors.gray}
-                  />
-                </TouchableOpacity>
-              </View>
-              {passwordError ? (
-                <Text style={styles.errorText}>{passwordError}</Text>
-              ) : null}
-            </View>
+        <AuthButton
+          title="Iniciar sesión"
+          onPress={handleLogin}
+          loading={loading}
+        />
 
-            {/* Botón Iniciar Sesión */}
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Iniciar sesión</Text>
-            </TouchableOpacity>
-
-            {/* Link a Registro */}
-            <TouchableOpacity style={styles.registerLink} onPress={goToRegister}>
-              <Text style={styles.registerText}>
-                ¿No tienes cuenta?{' '}
-                <Text style={styles.registerTextBold}>Registrarse</Text>
-              </Text>
-            </TouchableOpacity>
-          </FormContainer>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Container>
+        <LinkButton
+          normalText="¿No tienes cuenta?"
+          linkText="Registrarse"
+          onPress={() => navigation.navigate('Register')}
+        />
+      </FormContainer>
+    </AuthContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  logoImage: {
-    width: 200,
-    height: 200,
-    marginBottom: 10,
-    borderRadius: 50,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '500' as const,
-    color: colors.dark,
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  inputError: {
-    borderColor: colors.red,
-    borderWidth: 2,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 16,
-    color: colors.dark,
-  },
-  eyeIcon: {
-    padding: 5,
-  },
-  errorText: {
-    color: colors.red,
-    fontSize: 12,
-    marginTop: 5,
-    marginLeft: 5,
-  },
-  loginButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  loginButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: 'bold' as const,
-  },
-  registerLink: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  registerText: {
-    fontSize: 14,
-    color: colors.gray,
-  },
-  registerTextBold: {
-    fontWeight: 'bold' as const,
-    color: colors.primary,
-  },
-});
 
 export default LoginScreen;

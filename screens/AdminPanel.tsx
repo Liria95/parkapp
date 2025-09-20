@@ -1,183 +1,268 @@
-import { useState } from 'react';
+// Constantes
 import { colors } from '../utils';
-import { DIMENSIONES, AUTH_ROUTES } from '../utils';
-import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, View, Text, Pressable, TouchableOpacity, Alert} from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, Alert, FlatList, ScrollView} from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components/native';
+import { getDynamicSpacing, getResponsiveSize } from '../utils/ResponsiveUtils';
+
+
+// Componentes reutilizables
+
+import { Container } from '../components/shared/StyledComponents';
+import AppHeader from '../components/common/AppHeader';
+import StatsGrid from '../components/dashboard/StatsGrid';
+import InfoCard from '../components/adminpanel/InfoCard';
+// navegación
+
+type RootStackParamList = {
+  AdminDashboard: undefined;
+  AdminPanel: undefined;
+};
+
+type AdminPanelNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'AdminPanel'
+>;
+
+// Styled components
+const Section = styled.View`
+  margin-bottom: ${getDynamicSpacing(20)}px;
+`;
+
+const SectionTitle = styled.Text`
+  text-align: center;
+  font-size: ${getResponsiveSize(18)}px;
+  font-weight: bold;
+  color: ${colors.dark};
+  margin-bottom: ${getDynamicSpacing(10)}px;
+`;
+
+const UserRow = styled.View`
+  padding: ${getDynamicSpacing(10)}px;
+  border-bottom-width: 1px;
+  border-color: ${colors.lightGray};
+`;
+
+const UserText = styled.Text`
+  font-size: ${getResponsiveSize(14)}px;
+  color: ${colors.dark};
+`;
+
+interface User {
+  id: string;
+  nombre: string;
+  tipo: 'frecuente' | 'nuevo' | 'moroso';
+  multas: number;
+}
+
 
 export default function AdminPanel () {
 
-    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'espacios' | 'usuarios'| 'adminpanel'>('dashboard');
+    const navigation = useNavigation<AdminPanelNavigationProp>();
 
-    const handleNavigation = (section: 'dashboard' | 'espacios' | 'usuarios' | 'adminpanel') => {
-    setActiveTab(section);
-    //Alert.alert('Navegación', `Ir a sección: ${section}`);
-    switch (section) {
-        case 'dashboard':
-            navigation.navigate(AUTH_ROUTES.ADMINDASHBOARD);
-            break;
-        case 'adminpanel':
-            navigation.navigate(AUTH_ROUTES.ADMINPANEL);
-            break;
-        default:
-        Alert.alert('Navegación', `Sección no encontrada: ${section}`);
-    }
+
+    // Mock datos
+    const [stats, setStats] = useState({
+        ocupacion: 92,
+        ingresosHoy: 24580,
+        multasPendientes: 12,
+        adminsActivos: 3,
+    });
+
+    const [comparativa, setComparativa] = useState({
+        ingresos: '+12%',
+        ocupacion: '-3%',
+        multas: '+5%',
+    });
+
+    const [usuarios] = useState<User[]>([
+        { id: '1', nombre: 'Juan Pérez', tipo: 'frecuente', multas: 0 },
+        { id: '2', nombre: 'María García', tipo: 'moroso', multas: 3 },
+        { id: '3', nombre: 'Ana López', tipo: 'nuevo', multas: 0 },
+        { id: '4', nombre: 'Carlos Gómez', tipo: 'moroso', multas: 5 },
+    ]);
+
+    const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<User | null>(null);
+
+    // Alerta si ocupación supera 95%
+    useEffect(() => {
+        if (stats.ocupacion > 95) {
+            Alert.alert(
+            '⚠️ Alerta de Ocupación',
+            'La ocupación ha superado el 95%. Considere liberar espacios o ajustar tarifas.'
+        );
+        }
+    }, [stats.ocupacion]);
+
+    //Historial ingresos y ocupaciones anteriores
+    const historyStats = [
+      {
+        id: 'yesterday-occupancy',
+        label: 'Ocupación Ayer',
+        value: '88%',
+        trend: '-4%',
+      },
+      {
+        id: 'yesterday-revenue',
+        label: 'Ingresos Ayer',
+        value: '$20.500',
+        trend: '+2%',
+      },
+      {
+        id: 'last-week-occupancy',
+        label: 'Ocupación Miércoles Pasado',
+        value: '91%',
+        trend: '+1%',
+      },
+      {
+        id: 'last-week-revenue',
+        label: 'Ingresos Miércoles Pasado',
+        value: '$21.700',
+        trend: '-3%',
+      },
+    ];
+
+    // Configuración de StatsGrid
+    const statsConfig = [
+      {
+          id: 'ocupacion',
+          number: `${stats.ocupacion}%`,
+          label: 'Ocupación Actual',
+          backgroundColor: colors.primary,
+      },
+      {
+          id: 'ingresos',
+          number: `$${stats.ingresosHoy}`,
+          label: 'Ingresos Hoy',
+          backgroundColor: colors.green,
+      },
+      {
+          id: 'multas',
+          number: stats.multasPendientes,
+          label: 'Multas Pendientes',
+          backgroundColor: colors.red,
+      },
+      {
+          id: 'admins',
+          number: stats.adminsActivos,
+          label: 'Admins Activos',
+          backgroundColor: colors.yellow,
+      },
+    ];
+
+    const handleUsuarioPress = (usuario: User) => {
+        setUsuarioSeleccionado(usuario);
+        Alert.alert(`Ver usuario ${usuario.nombre}`, 'Detalle del usuario')
     };
-    
+
+    const getUserColor = (tipo: User['tipo']) => {
+        switch(tipo) {
+            case 'frecuente': return colors.green;
+            case 'nuevo': return colors.primary;
+            case 'moroso': return colors.red;
+            default: return colors.gray;
+        }
+    }
+
     return (
-        <>
-        <View style={styles.container}>
-            {/* HEADER */}
-            <View style={styles.header}>
-                <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Admin - Sistema ParkApp</Text>
-                    <Text style={styles.headerSubtitle}>Panel de Administración</Text>
-                </View>
-                <TouchableOpacity style={styles.menuButton} onPress={() => Alert.alert('Menú', 'Editar perfil\nNotificaciones\nConfiguración')}>
-                    <Ionicons name="person-outline" size={20 * DIMENSIONES.SCALE} color={colors.white} />
-                </TouchableOpacity>
-            </View>
+        <Container>
+            <AppHeader
+              title="Panel de Administrador"
+              subtitle="Centro de Control"
+              onBackPress={() => navigation.goBack()}
+              rightIconName="person-outline"
+              onRightPress={() => Alert.alert('Perfil', 'Editar Perfil\n Configuración \nNotificaciones')}
+            />
 
-
-            <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarText}>A</Text>
-            </View>
-            <View> 
-                <TouchableOpacity style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Dashboard General</Text>
+            <StatsGrid stats={statsConfig} />
+        
+            {/* Histórico de días anteriores */}
+            <Section>
+              <SectionTitle>Histórico reciente</SectionTitle>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center'}}>
+                {historyStats.map((item) => (
+                  <InfoCard
+                    key={item.id}
+                    label={item.label}
+                    value={item.value}
+                    trend={item.trend}
+                    backgroundColor={colors.lightGray}
+                  />
+                ))}
+              </View>
+            </Section>
+            
+            <SectionTitle>Usuarios HOY</SectionTitle>
+            <FlatList
+              data={usuarios}
+              keyExtractor={(u) => u.id}
+              contentContainerStyle={{ paddingHorizontal: 16 }} //igual que StatsGrid
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.userCard}
+                  onPress={() => handleUsuarioPress(item)}
+                >
+                  <View style={[styles.userAvatar, { backgroundColor: getUserColor(item.tipo) }]}>
+                    <Text style={styles.userAvatarText}>{item.nombre[0]}</Text>
+                  </View>
+                  <View style={styles.userInfo}>
+                    <Text style={styles.userName}>{item.nombre}</Text>
+                    <Text style={styles.userDetails}>
+                      {item.tipo.toUpperCase()} | Multas: {item.multas}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Gestión de Estacionamientos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Usuarios Activos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Transacciones y saldos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Infracciones</Text>
-                </TouchableOpacity>
-            </View>
-
-        </View> 
-            <View style={styles.bottomNavigation}>
-                <TouchableOpacity onPress={() =>handleNavigation('adminpanel')} style={styles.navItem}>
-                    <Ionicons name="briefcase-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'adminpanel' ? colors.primary : colors.gray} />
-                    <Text style={styles.iconTitle}>ADMIN</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() =>handleNavigation('dashboard')} style={styles.navItem}>
-                    <Ionicons name="grid-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'dashboard' ? colors.primary : colors.gray} />
-                    <Text style={styles.iconTitle}>DASHBOARD</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="car-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'espacios' ? colors.primary : colors.gray} />
-                    <Text style={styles.iconTitle}>ESPACIOS</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="people-outline" size={22 * DIMENSIONES.SCALE} color={activeTab === 'usuarios' ? colors.primary : colors.gray} />
-                    <Text style={styles.iconTitle}>USUARIOS</Text>
-                </TouchableOpacity>
-            </View>
-        </>
+              )}
+            />     
+                
+            
+        </Container>
     )
 }
 
 const styles = StyleSheet.create({
-    avatarPlaceholder: {
-        width: 80,                      
-        height: 80,                      
-        borderRadius: 40,                 
-        backgroundColor: colors.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: -40,     // 👈 lo sube y lo superpone al header
-        marginBottom: 20,   // espacio hacia las cards
-        alignSelf: 'center', // lo centra en horizontal
-        borderWidth: 3,     // 👈 opcional: borde que lo separa del header
-        borderColor: colors.white, // 👈 hace que “flote” mejor
-        
+    userCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#f8f8f8',
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 10,
+      elevation: 3, // para Android sombra
+      shadowColor: '#000', // para iOS sombra
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
     },
-    avatarText: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        color: colors.white,
+    userAvatar: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: '#aaa',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
     },
-    bottomNavigation: {
-        flexDirection: 'row',
-        backgroundColor: colors.white,
-        padding: 12 * DIMENSIONES.SCALE,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E5E5',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: -2},
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+    userAvatarText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 16,
     },
-    container: {
-        flex: 1,
-        width: '100%',
-        backgroundColor: colors.lightGray,
+    userInfo: {
+      flex: 1,
     },
-    header: {
-        backgroundColor: colors.primary,
-        padding: DIMENSIONES.HEIGHT * 0.06,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+    userName: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: colors.dark,
     },
-    headerContent: {
-        flex: 1,
+    userDetails: {
+      fontSize: 14,
+      color: colors.gray,
     },
-    headerTitle: { color: colors.white, fontSize: 18 * DIMENSIONES.SCALE, fontWeight: 'bold' },
-    headerSubtitle: { color: colors.white, fontSize: 14 * DIMENSIONES.SCALE, opacity: 0.9, marginTop: 2 * DIMENSIONES.SCALE },
-    menuButton: {
-        width: 40 * DIMENSIONES.SCALE,
-        height: 40 * DIMENSIONES.SCALE,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 20 * DIMENSIONES.SCALE,
-        justifyContent: 'center',
-        alignItems: 'center',
-  },
-    navItem: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 8 * DIMENSIONES.SCALE,
-    },
-    sectionCard: {
-        alignItems: 'center',
-        padding: 12,
-        borderWidth: 2,
-        borderColor: colors.primary,
-        borderStyle: 'dashed',
-        backgroundColor: colors.white,
-        marginTop: 0,
-        marginRight: DIMENSIONES.WIDTH * 0.05,
-        marginBottom: 15,
-        marginLeft: DIMENSIONES.WIDTH * 0.05,
-        borderRadius: 12 * DIMENSIONES.SCALE,
-        elevation: 2,
-        shadowColor: '#000000',
-        shadowOffset: { width: 2, height: 0 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+});
 
-    },
-    sectionTitle: {
-        fontSize: (16 * DIMENSIONES.SCALE),
-        fontWeight: 'bold',
-        color: colors.dark,    
-    },
-    iconTitle: {
-        fontSize: 10 * DIMENSIONES.SCALE, 
-        fontWeight: '500', 
-        marginTop: 4, 
-        textAlign: 'center', 
-        //color: activeTab === 'usuarios' ? colors.primary : colors.gray
-    }
-})
+
+
