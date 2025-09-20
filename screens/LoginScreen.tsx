@@ -46,12 +46,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         const result = await AuthService.login(email, password);
         
         if (result.success && result.isAdmin) {
+          // Admin login exitoso
           console.log('Login Admin exitoso:', result.user?.name);
           navigation.navigate('AdminDashboard');
-        } else if (result.success) {
-          Alert.alert('Login exitoso', result.message, [{ text: 'OK' }]);
+        } else if (result.success && !result.isAdmin) {
+          // Usuario final login exitoso
+          console.log('Login Usuario exitoso:', result.user?.name);
+          // Navegar a la pantalla del usuario final
+          navigation.navigate('UserDashboard');//cambiar por pantalla de usuario
         } else {
-          Alert.alert('Error de login', result.message, [{ text: 'OK' }]);
+          //Credenciales incorrectas
+          Alert.alert(
+            'Error de login', 
+            result.message || 'Email o contraseña incorrectos', 
+            [{ text: 'OK' }]
+          );
         }
       } catch (error) {
         Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
