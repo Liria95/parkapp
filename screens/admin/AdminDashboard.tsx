@@ -6,15 +6,15 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 
 // Componentes reutilizables
-import DashboardHeader from '../components/dashboard/DashboardHeader';
-import StatsGrid from '../components/dashboard/StatsGrid';
-import SectionCard from '../components/dashboard/SectionCard';
-import ChartPlaceholder from '../components/dashboard/ChartPlaceholder';
-import UserList from '../components/dashboard/UserList';
-import BottomTabNavigation from '../components/navigation/BottomTabNavigation';
+import DashboardHeader from '../../components/dashboard/DashboardHeader';
+import StatsGrid from '../../components/dashboard/StatsGrid';
+import SectionCard from '../../components/dashboard/SectionCard';
+import ChartPlaceholder from '../../components/dashboard/ChartPlaceholder';
+import UserList from '../../components/dashboard/UserList';
+import BottomTabNavigation from '../../components/navigation/BottomTabNavigation';
 
 // Constantes
-import { colors } from '../constants/colors';
+import { colors } from '../../constants/colors';
 
 // Tipos
 type RootStackParamList = {

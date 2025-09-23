@@ -2,18 +2,18 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
 // Componentes reutilizables
-import AuthContainer from '../components/auth/AuthContainer';
-import FormContainer from '../components/common/FormContainer';
-import InputField from '../components/common/InputField';
-import AuthButton from '../components/common/AuthButton';
-import LogoHeader from '../components/common/LogoHeader';
-import LinkButton from '../components/common/LinkButton';
+import AuthContainer from '../../components/auth/AuthContainer';
+import FormContainer from '../../components/common/FormContainer';
+import InputField from '../../components/common/InputField';
+import AuthButton from '../../components/common/AuthButton';
+import LogoHeader from '../../components/common/LogoHeader';
+import LinkButton from '../../components/common/LinkButton';
 
 // Hooks y servicios
-import { useFormValidation } from '../hooks/useFormValidation';
-import { AuthService } from '../services/AuthService';
+import { useFormValidation } from '../../hooks/useFormValidation';
+import { AuthService } from '../../services/AuthService';
 
-import { AUTH_ACTIONS, AuthContext } from '../components/shared/Context/AuthContext';
+import { AUTH_ACTIONS, AuthContext } from '../../components/shared/Context/AuthContext';
 
 
 // Tipos

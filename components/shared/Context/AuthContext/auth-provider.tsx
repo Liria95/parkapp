@@ -14,61 +14,112 @@ interface State {
     token: string | null,
     user: User | null,
     refreshToken: string | null,
+    isAuthenticated: boolean, // Agregar para facilitar la navegación
 }
 
-const initialState = {
-    isLoading: false, 
+const initialState: State = {
+    isLoading: true, // Cambiar a true para mostrar loading mientras verifica
     token: null,
     user: null, 
-    refreshToken: null 
+    refreshToken: null,
+    isAuthenticated: false,
 }
 
-const AuthProvider = (props:any) => { 
-    
+const AuthProvider = (props: any) => { 
     
     const [state, dispatch] = useReducer((prevState: State, action: Action) => {
     
-    const {payload} = action;
+        const { payload } = action;
 
-    switch (action.type){
-        case AUTH_ACTIONS.LOGIN:
-            console.log('Guardando usuario en SecureStore: ', payload.user); //agrego para verificar SecureStore
-            if (payload?.user) setUser(payload.user);
-            return{
-                ...prevState,
-                user: payload?.user ?? null,
-                token: payload?.token ?? null,
-                refreshToken: payload?.refreshToken ?? null,
-            }
-        
-            // Restaurar sesión al iniciar la app
-        case AUTH_ACTIONS.SET_USER: 
-          return {
-            ...prevState,
-            user: payload?.user ?? null,
-            token: payload?.token ?? null,
-            refreshToken: payload?.refreshToken ?? null,
-          };
-
-        case AUTH_ACTIONS.LOGOUT:
-            deleteUser()
-            return initialState
+        switch (action.type) {
+            case AUTH_ACTIONS.LOGIN:
+                console.log('Guardando usuario en SecureStore: ', payload.user);
+                if (payload?.user) {
+                    // Guardar todos los datos necesarios
+                    setUser({
+                        user: payload.user,
+                        token: payload.token,
+                        refreshToken: payload.refreshToken
+                    });
+                }
+                return {
+                    ...prevState,
+                    user: payload?.user ?? null,
+                    token: payload?.token ?? null,
+                    refreshToken: payload?.refreshToken ?? null,
+                    isAuthenticated: !!payload?.user,
+                    isLoading: false,
+                }
             
-        default:
-            return prevState
-    }
-   }, initialState );
+            case AUTH_ACTIONS.SET_USER: 
+                return {
+                    ...prevState,
+                    user: payload?.user ?? null,
+                    token: payload?.token ?? null,
+                    refreshToken: payload?.refreshToken ?? null,
+                    isAuthenticated: !!payload?.user,
+                    isLoading: false, // Terminar loading después de verificar
+                };
 
-   useEffect(() => {
+            case AUTH_ACTIONS.LOGOUT:
+                console.log('Cerrando sesión y eliminando datos de SecureStore');
+                deleteUser();
+                return {
+                    ...initialState,
+                    isLoading: false, // No loading después de logout
+                }
+                
+            case AUTH_ACTIONS.SET_LOADING:
+                return {
+                    ...prevState,
+                    isLoading: payload
+                }
+            
+            default:
+                return prevState
+        }
+    }, initialState);
+
+    useEffect(() => {
         // Restaurar sesión desde SecureStore
-        getUser().then((user) => {
-            console.log('Usuario recuperado de SecureStore:', user); //agrego para verificar SecureStore
-            dispatch({ type: AUTH_ACTIONS.SET_USER, payload: { user } });
-        }).catch(err => console.log('Error al recuperar usuario:', err));
+        const restoreSession = async () => {
+            try {
+                dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: true });
+                
+                const userData = await getUser();
+                console.log('Usuario recuperado de SecureStore:', userData);
+                
+                if (userData && userData.user) {
+                    // Si hay datos guardados, restaurar la sesión
+                    dispatch({ 
+                        type: AUTH_ACTIONS.SET_USER, 
+                        payload: {
+                            user: userData.user,
+                            token: userData.token,
+                            refreshToken: userData.refreshToken
+                        }
+                    });
+                } else {
+                    // No hay sesión guardada
+                    dispatch({ 
+                        type: AUTH_ACTIONS.SET_USER, 
+                        payload: { user: null }
+                    });
+                }
+            } catch (err) {
+                console.log('Error al recuperar usuario:', err);
+                dispatch({ 
+                    type: AUTH_ACTIONS.SET_USER, 
+                    payload: { user: null }
+                });
+            }
+        };
+
+        restoreSession();
     }, []);
     
     return (
-        <AuthContext.Provider value={{state, dispatch}}>
+        <AuthContext.Provider value={{ state, dispatch }}>
             {props.children}
         </AuthContext.Provider>
     )  
