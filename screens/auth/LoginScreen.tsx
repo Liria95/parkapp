@@ -15,7 +15,6 @@ import { AuthService } from '../../services/AuthService';
 
 import { AUTH_ACTIONS, AuthContext } from '../../components/shared/Context/AuthContext';
 
-
 // Tipos
 interface NavigationProp {
   navigate: (screen: string) => void;
@@ -53,40 +52,46 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       }
     );
 
-  if (isValid) {
-    setLoading(true);
+    if (isValid) {
+      setLoading(true);
 
-    try {
-      const result = await AuthService.login(email, password);
+      try {
+        const result = await AuthService.login(email, password);
 
-      if (result.success && result.user) {
-        // Dispara el tipo de la acción para guardar al usuario en el contexto
-        dispatch({ 
-          type: AUTH_ACTIONS.LOGIN, payload: {
-          token: "TOKEN",
-          refreshToken: "REFRESH_TOKEN",
-          user: result.user,
-          
-        }, });
+        if (result.success && result.user) {
+          // Dispara el tipo de la acción para guardar al usuario en el contexto
+          dispatch({ 
+            type: AUTH_ACTIONS.LOGIN, 
+            payload: {
+              token: "TOKEN", // Placeholder hasta que AuthService devuelva tokens reales
+              refreshToken: "REFRESH_TOKEN", // Placeholder hasta que AuthService devuelva tokens reales
+              user: result.user,
+            }
+          });
 
-        if (result.isAdmin) {
-          console.log('Login Admin exitoso:', result.user?.name);
-          navigation.navigate('AdminDashboard');
+          if (result.isAdmin) {
+            console.log('Login Admin exitoso:', result.user?.name);
+            navigation.navigate('AdminDashboard');
+          } else {
+            console.log('Login Usuario exitoso:', result.user?.name);
+            // Navegar a la pantalla del usuario final
+            navigation.navigate('UserDashboard'); // Cambiar por pantalla de usuario
+          }
         } else {
-          Alert.alert('Login exitoso', result.message, [{ text: 'OK' }]);
+          // Credenciales incorrectas
+          Alert.alert(
+            'Error de login', 
+            result.message || 'Email o contraseña incorrectos', 
+            [{ text: 'OK' }]
+          );
         }
-      } else {
-        Alert.alert('Error de login', result.message, [{ text: 'OK' }]);
+      } catch (error) {
+        Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
-    } finally {
-      setLoading(false);
-    }
-
-  } //cierra el isValid
-
-  } //cierra la función Login Screen
+    } // cierra el isValid
+  }; // cierra la función handleLogin
 
   return (
     <AuthContainer>

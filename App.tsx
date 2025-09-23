@@ -7,6 +7,7 @@ import styled from 'styled-components/native';
 // Importar pantallas
 import LoginScreen from './screens/auth/LoginScreen';
 import RegisterScreen from './screens/auth/RegisterScreen';
+import AdminDashboard from './screens/admin/AdminDashboard';
 import AdminDrawer from './screens/admin/AdminDrawer';
 
 // Context
@@ -20,6 +21,7 @@ export type AuthStackParamList = {
 };
 
 export type AppStackParamList = {
+  AdminDashboard: undefined;
   AdminDrawer: undefined;
 };
 
@@ -72,6 +74,10 @@ const AppNavigator = () => (
     }}
   >
     <AppStack.Screen 
+      name="AdminDashboard" 
+      component={AdminDashboard}
+    />
+    <AppStack.Screen 
       name="AdminDrawer" 
       component={AdminDrawer}
     />
@@ -82,11 +88,26 @@ const AppNavigator = () => (
 const RootNavigator = () => {
   const { state } = useContext(AuthContext);
 
+  // Logs de debug
+  console.log('🔍 RootNavigator - Estado actual:', {
+    isLoading: state.isLoading,
+    isAuthenticated: state.isAuthenticated,
+    user: state.user?.name || 'No user',
+    token: state.token ? 'Presente' : 'Ausente'
+  });
+
   if (state.isLoading) {
+    console.log('📱 Mostrando LoadingScreen');
     return <LoadingScreen />;
   }
 
-  return state.isAuthenticated ? <AppNavigator /> : <AuthNavigator />;
+  if (state.isAuthenticated) {
+    console.log('Usuario autenticado - Mostrando AppNavigator');
+    return <AppNavigator />;
+  } else {
+    console.log('Usuario NO autenticado - Mostrando AuthNavigator');
+    return <AuthNavigator />;
+  }
 };
 
 // App principal
