@@ -101,7 +101,7 @@ const AuthProvider = (props: any) => {
                     });
                 } else {
                     // No hay sesión guardada
-                    dispatch({ 
+                    dispatch({  
                         type: AUTH_ACTIONS.SET_USER, 
                         payload: { user: null }
                     });

@@ -69,13 +69,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             }
           });
 
+          // Ya no manejamos navegación manual, AuthContext decide automáticamente
           if (result.isAdmin) {
             console.log('Login Admin exitoso:', result.user?.name);
-            navigation.navigate('AdminDashboard');
+            // AuthContext navegará automáticamente a AdminNavigator
           } else {
             console.log('Login Usuario exitoso:', result.user?.name);
-            // Navegar a la pantalla del usuario final
-            navigation.navigate('UserDashboard'); // Cambiar por pantalla de usuario
+            // AuthContext navegará automáticamente a UserNavigator
           }
         } else {
           // Credenciales incorrectas

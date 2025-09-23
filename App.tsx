@@ -10,8 +10,12 @@ import RegisterScreen from './screens/auth/RegisterScreen';
 import AdminDashboard from './screens/admin/AdminDashboard';
 import AdminDrawer from './screens/admin/AdminDrawer';
 
+// NUEVO: Importar navegación de usuario
+import NavegadorTabsUsuario from './screens/user/navegacion/NavegadorTabs';
+
 // Context
 import { AuthProvider, AuthContext } from './components/shared/Context/AuthContext';
+import { UsuarioProvider } from './screens/user/contexto/UsuarioContext';
 import { colors } from './constants/colors';
 
 // Tipos de navegación
@@ -20,13 +24,18 @@ export type AuthStackParamList = {
   Register: undefined;
 };
 
-export type AppStackParamList = {
+export type AdminStackParamList = {
   AdminDashboard: undefined;
   AdminDrawer: undefined;
 };
 
+export type UserStackParamList = {
+  UserMain: undefined;
+};
+
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
-const AppStack = createNativeStackNavigator<AppStackParamList>();
+const AdminStack = createNativeStackNavigator<AdminStackParamList>();
+const UserStack = createNativeStackNavigator<UserStackParamList>();
 
 // Componente de loading
 const LoadingContainer = styled.View`
@@ -42,7 +51,7 @@ const LoadingScreen = () => (
   </LoadingContainer>
 );
 
-// Stack de autenticación (cuando no está logueado)
+// Stack de autenticación
 const AuthNavigator = () => (
   <AuthStack.Navigator 
     initialRouteName="Login"
@@ -55,9 +64,7 @@ const AuthNavigator = () => (
     <AuthStack.Screen 
       name="Login" 
       component={LoginScreen}
-      options={{
-        gestureEnabled: false,
-      }}
+      options={{ gestureEnabled: false }}
     />
     <AuthStack.Screen 
       name="Register" 
@@ -66,47 +73,47 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
-// Stack principal (cuando está logueado)
-const AppNavigator = () => (
-  <AppStack.Navigator
-    screenOptions={{
-      headerShown: false,
-    }}
-  >
-    <AppStack.Screen 
-      name="AdminDashboard" 
-      component={AdminDashboard}
-    />
-    <AppStack.Screen 
-      name="AdminDrawer" 
-      component={AdminDrawer}
-    />
-  </AppStack.Navigator>
+// Stack para Admin
+const AdminNavigator = () => (
+  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+    <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
+    <AdminStack.Screen name="AdminDrawer" component={AdminDrawer} />
+  </AdminStack.Navigator>
+);
+
+// Stack para Usuario Final
+const UserNavigator = () => (
+  <UsuarioProvider>
+    <UserStack.Navigator screenOptions={{ headerShown: false }}>
+      <UserStack.Screen name="UserMain" component={NavegadorTabsUsuario} />
+    </UserStack.Navigator>
+  </UsuarioProvider>
 );
 
 // Componente que decide qué navegación mostrar
 const RootNavigator = () => {
   const { state } = useContext(AuthContext);
 
-  // Logs de debug
-  console.log('🔍 RootNavigator - Estado actual:', {
+  console.log('Estado actual:', {
     isLoading: state.isLoading,
     isAuthenticated: state.isAuthenticated,
-    user: state.user?.name || 'No user',
-    token: state.token ? 'Presente' : 'Ausente'
+    userType: state.user?.type,
+    user: state.user?.name || 'No user'
   });
 
   if (state.isLoading) {
-    console.log('📱 Mostrando LoadingScreen');
     return <LoadingScreen />;
   }
 
-  if (state.isAuthenticated) {
-    console.log('Usuario autenticado - Mostrando AppNavigator');
-    return <AppNavigator />;
-  } else {
-    console.log('Usuario NO autenticado - Mostrando AuthNavigator');
+  if (!state.isAuthenticated) {
     return <AuthNavigator />;
+  }
+
+  // Decide navegación según tipo de usuario
+  if (state.user?.type === 'admin') {
+    return <AdminNavigator />;
+  } else {
+    return <UserNavigator />;
   }
 };
 
