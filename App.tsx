@@ -4,14 +4,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AUTH_ROUTES } from './utils';
 
 // Importar todas las pantallas
-import LoginScreen from './screens/LoginScreen';
-import RegisterScreen from './screens/RegisterScreen';
-import AdminDashboard from './screens/AdminDashboard';
-import EspaciosScreen from './screens/EspaciosScreen';
-import GestionUsuariosScreen from './screens/GestionUsuariosScreen';
-import InfraccionesScreen from './screens/InfraccionesScreen';
-import RegistroManualScreen from './screens/RegistroManualScreen';
-import AdminPanel from './screens/AdminPanel';
+import LoginScreen from './screens/auth/LoginScreen';
+import RegisterScreen from './screens/auth/RegisterScreen';
+import AdminDashboard from './screens/admin/AdminDashboard';
+import EspaciosScreen from './screens/admin/EspaciosScreen';
+import GestionUsuariosScreen from './screens/admin/GestionUsuariosScreen';
+import InfraccionesScreen from './screens/admin/InfraccionesScreen';
+import RegistroManualScreen from './screens/admin/RegistroManualScreen';
+import AdminPanel from './screens/admin/AdminPanel';
 
 // Definir los tipos de navegación
 export type RootStackParamList = {
