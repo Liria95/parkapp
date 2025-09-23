@@ -45,6 +45,34 @@ export class AuthService {
     },
   ];
 
+  // lista de usuarios finales hardcodeados
+  private static SYSTEM_USERS: User[] = [
+    { 
+      email: 'usuario@gmail.com', 
+      password: '123456', 
+      type: 'user', 
+      name: 'Juan Pérez' 
+    },
+    { 
+      email: 'maria@gmail.com', 
+      password: 'maria123', 
+      type: 'user', 
+      name: 'María González' 
+    },
+    { 
+      email: 'carlos@gmail.com', 
+      password: 'carlos456', 
+      type: 'user', 
+      name: 'Carlos Rodriguez' 
+    },
+    { 
+      email: 'ana@gmail.com', 
+      password: 'ana789', 
+      type: 'user', 
+      name: 'Ana Martinez' 
+    },
+  ];
+
   static async login(email: string, password: string): Promise<LoginResult> {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -63,19 +91,25 @@ export class AuthService {
       };
     }
 
-    // Validación básica para usuarios finales
-    if (email && password && password.length >= 6) {
+    // Verificar si es un usuario final registrado
+    const regularUser = this.SYSTEM_USERS.find(user => 
+      user.email === email && user.password === password
+    );
+    
+    if (regularUser) {
       return {
         success: true,
+        user: regularUser,
         isAdmin: false,
-        message: `Bienvenido Usuario Final!\nEmail: ${email}`,
+        message: `Bienvenido ${regularUser.name}`,
       };
     }
 
+    // Si no encuentra el usuario o la contraseña es incorrecta
     return {
       success: false,
       isAdmin: false,
-      message: 'Credenciales inválidas',
+      message: 'Email o contraseña incorrectos',
     };
   }
 
@@ -83,9 +117,29 @@ export class AuthService {
     // Simular delay de red
     await new Promise(resolve => setTimeout(resolve, 1500));
 
+    // Verificar si el email ya existe
+    const emailExists = [...this.SYSTEM_ADMINS, ...this.SYSTEM_USERS]
+      .some(user => user.email === data.email);
+
+    if (emailExists) {
+      return {
+        success: false,
+        isAdmin: false,
+        message: 'Este email ya está registrado',
+      };
+    }
+
     // Simular registro exitoso
+    const newUser: User = {
+      email: data.email,
+      password: data.password,
+      type: 'user',
+      name: data.fullName
+    };
+
     return {
       success: true,
+      user: newUser,
       isAdmin: false,
       message: `¡Bienvenido ${data.fullName}!\nTu cuenta ha sido creada exitosamente.`,
     };
@@ -93,5 +147,13 @@ export class AuthService {
 
   static isAdminEmail(email: string): boolean {
     return this.SYSTEM_ADMINS.some(admin => admin.email === email);
+  }
+
+  // Método útil para debugging
+  static getAvailableUsers(): { admins: User[], users: User[] } {
+    return {
+      admins: this.SYSTEM_ADMINS,
+      users: this.SYSTEM_USERS
+    };
   }
 }
