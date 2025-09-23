@@ -1,21 +1,22 @@
 // Constantes
-import { colors } from '../utils';
-import { StyleSheet, View, Text, TouchableOpacity, Alert, FlatList, ScrollView} from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { colors } from '../../utils';
+import { StyleSheet, View, Text, TouchableOpacity, Alert, FlatList} from "react-native";
+import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components/native';
-import { getDynamicSpacing, getResponsiveSize } from '../utils/ResponsiveUtils';
+import { getDynamicSpacing, getResponsiveSize } from '../../utils/ResponsiveUtils';
 
 
 // Componentes reutilizables
+import { Container } from '../../components/shared/StyledComponents';
+import AppHeader from '../../components/common/AppHeader';
+import StatsGrid from '../../components/dashboard/StatsGrid';
+import InfoCard from '../../components/adminpanel/InfoCard';
+import { AUTH_ACTIONS, AuthContext } from '../../components/shared/Context/AuthContext';
 
-import { Container } from '../components/shared/StyledComponents';
-import AppHeader from '../components/common/AppHeader';
-import StatsGrid from '../components/dashboard/StatsGrid';
-import InfoCard from '../components/adminpanel/InfoCard';
+
 // navegación
-
 type RootStackParamList = {
   AdminDashboard: undefined;
   AdminPanel: undefined;
@@ -56,7 +57,6 @@ interface User {
   tipo: 'frecuente' | 'nuevo' | 'moroso';
   multas: number;
 }
-
 
 export default function AdminPanel () {
 
@@ -168,14 +168,6 @@ export default function AdminPanel () {
 
     return (
         <Container>
-            <AppHeader
-              title="Panel de Administrador"
-              subtitle="Centro de Control"
-              onBackPress={() => navigation.goBack()}
-              rightIconName="person-outline"
-              onRightPress={() => Alert.alert('Perfil', 'Editar Perfil\n Configuración \nNotificaciones')}
-            />
-
             <StatsGrid stats={statsConfig} />
         
             {/* Histórico de días anteriores */}
@@ -197,7 +189,8 @@ export default function AdminPanel () {
             <SectionTitle>Usuarios HOY</SectionTitle>
             <FlatList
               data={usuarios}
-              keyExtractor={(u) => u.id}
+              refreshing={true}
+              keyExtractor={(usuario) => usuario.id}
               contentContainerStyle={{ paddingHorizontal: 16 }} //igual que StatsGrid
               renderItem={({ item }) => (
                 <TouchableOpacity

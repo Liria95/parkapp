@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 
 // Componentes reutilizables
@@ -13,6 +13,9 @@ import LinkButton from '../components/common/LinkButton';
 import { useFormValidation } from '../hooks/useFormValidation';
 import { AuthService } from '../services/AuthService';
 
+import { AUTH_ACTIONS, AuthContext } from '../components/shared/Context/AuthContext';
+
+
 // Tipos
 interface NavigationProp {
   navigate: (screen: string) => void;
@@ -23,11 +26,22 @@ interface LoginScreenProps {
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+
+  const {state, dispatch} = useContext(AuthContext);
+
+  // Dentro de LoginScreen
+  useEffect(() => {
+    if (state.user) {
+      console.log('Usuario logueado:', state.user);
+      console.log('Token:', state.token);
+      console.log('Refresh Token:', state.refreshToken);
+    }
+  }, [state]);
+
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
   const { errors, validateForm, clearError } = useFormValidation();
 
   const handleLogin = async (): Promise<void> => {
@@ -39,27 +53,40 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       }
     );
 
-    if (isValid) {
-      setLoading(true);
-      
-      try {
-        const result = await AuthService.login(email, password);
-        
-        if (result.success && result.isAdmin) {
+  if (isValid) {
+    setLoading(true);
+
+    try {
+      const result = await AuthService.login(email, password);
+
+      if (result.success && result.user) {
+        // Dispara el tipo de la acción para guardar al usuario en el contexto
+        dispatch({ 
+          type: AUTH_ACTIONS.LOGIN, payload: {
+          token: "TOKEN",
+          refreshToken: "REFRESH_TOKEN",
+          user: result.user,
+          
+        }, });
+
+        if (result.isAdmin) {
           console.log('Login Admin exitoso:', result.user?.name);
           navigation.navigate('AdminDashboard');
-        } else if (result.success) {
-          Alert.alert('Login exitoso', result.message, [{ text: 'OK' }]);
         } else {
-          Alert.alert('Error de login', result.message, [{ text: 'OK' }]);
+          Alert.alert('Login exitoso', result.message, [{ text: 'OK' }]);
         }
-      } catch (error) {
-        Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
-      } finally {
-        setLoading(false);
+      } else {
+        Alert.alert('Error de login', result.message, [{ text: 'OK' }]);
       }
+    } catch (error) {
+      Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
+    } finally {
+      setLoading(false);
     }
-  };
+
+  } //cierra el isValid
+
+  } //cierra la función Login Screen
 
   return (
     <AuthContainer>

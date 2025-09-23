@@ -1,4 +1,5 @@
 export interface User {
+  id: number,
   email: string;
   password: string;
   type: 'admin' | 'user';
@@ -22,18 +23,21 @@ export interface RegisterData {
 export class AuthService {
   private static SYSTEM_ADMINS: User[] = [
     { 
+      id: 1,
       email: 'admin@parkapp.com', 
       password: 'admin123', 
       type: 'admin', 
       name: 'Super Administrador' 
     },
     { 
+      id: 2,
       email: 'admin@gmail.com', 
       password: 'admin123', 
       type: 'admin', 
       name: 'Admin Principal' 
     },
     { 
+      id: 3,
       email: 'soporte@parkapp.com', 
       password: 'soporte123', 
       type: 'admin', 

@@ -22,7 +22,7 @@ type RootStackParamList = {
   Infracciones: undefined;
   GestionUsuarios: undefined;
   Espacios: undefined;
-  AdminPanel: undefined;
+  AdminDrawer: undefined;
 };
 
 type AdminDashboardNavigationProp = NativeStackNavigationProp<
@@ -125,10 +125,10 @@ const AdminDashboard: React.FC = () => {
       onPress: () => handleNavigation('dashboard'),
     },
     {
-      id: 'adminpanel',
+      id: 'admindrawer',
       label: 'ADMIN',
       iconName: 'briefcase-outline',
-      onPress: () => handleNavigation('adminpanel'),
+      onPress: () => handleNavigation('admindrawer'),
     },
     {
       id: 'espacios',
@@ -168,8 +168,8 @@ const AdminDashboard: React.FC = () => {
       case 'espacios':
         navigation.navigate('Espacios');
         break;
-      case 'adminpanel':
-        navigation.navigate('AdminPanel');
+      case 'admindrawer':
+        navigation.navigate('AdminDrawer');
         break;
       default:
         console.warn(`Sección desconocida: ${section}`);
