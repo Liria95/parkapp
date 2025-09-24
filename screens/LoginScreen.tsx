@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 // Componentes reutilizables
 import AuthContainer from '../components/auth/AuthContainer';
@@ -9,12 +11,9 @@ import AuthButton from '../components/common/AuthButton';
 import LogoHeader from '../components/common/LogoHeader';
 import LinkButton from '../components/common/LinkButton';
 
-// Hooks y servicios
-import { useFormValidation } from '../hooks/useFormValidation';
+// Servicios y contexto
 import { AuthService } from '../services/AuthService';
-
 import { AUTH_ACTIONS, AuthContext } from '../components/shared/Context/AuthContext';
-
 
 // Tipos
 interface NavigationProp {
@@ -25,11 +24,20 @@ interface LoginScreenProps {
   navigation: NavigationProp;
 }
 
+// Esquema de validación con Yup
+const LoginSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Formato de email inválido')
+    .required('El email es obligatorio'),
+  password: Yup.string()
+    .min(6, 'La contraseña debe tener al menos 6 caracteres')
+    .required('La contraseña es obligatoria'),
+});
+
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { state, dispatch } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const {state, dispatch} = useContext(AuthContext);
-
-  // Dentro de LoginScreen
   useEffect(() => {
     if (state.user) {
       console.log('Usuario logueado:', state.user);
@@ -38,36 +46,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   }, [state]);
 
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const { errors, validateForm, clearError } = useFormValidation();
-
-  const handleLogin = async (): Promise<void> => {
-    const isValid = validateForm(
-      { email, password },
-      {
-        email: { required: true, email: true },
-        password: { required: true, minLength: 6 },
-      }
-    );
-
-  if (isValid) {
-    setLoading(true);
-
+  const handleLogin = async (values: { email: string; password: string }) => {
     try {
-      const result = await AuthService.login(email, password);
+      const result = await AuthService.login(values.email, values.password);
 
       if (result.success && result.user) {
-        // Dispara el tipo de la acción para guardar al usuario en el contexto
-        dispatch({ 
-          type: AUTH_ACTIONS.LOGIN, payload: {
-          token: "TOKEN",
-          refreshToken: "REFRESH_TOKEN",
-          user: result.user,
-          
-        }, });
+        dispatch({
+          type: AUTH_ACTIONS.LOGIN,
+          payload: {
+            token: "TOKEN",
+            refreshToken: "REFRESH_TOKEN",
+            user: result.user,
+          },
+        });
 
         if (result.isAdmin) {
           console.log('Login Admin exitoso:', result.user?.name);
@@ -80,64 +71,67 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       }
     } catch (error) {
       Alert.alert('Error', 'Ocurrió un error inesperado', [{ text: 'OK' }]);
-    } finally {
-      setLoading(false);
     }
-
-  } //cierra el isValid
-
-  } //cierra la función Login Screen
+  };
 
   return (
     <AuthContainer>
       <LogoHeader title="ParkApp" />
-      
-      <FormContainer>
-        <InputField
-          label="Email"
-          iconName="mail-outline"
-          placeholder="Ingresá tu email"
-          value={email}
-          onChangeText={(text: string) => {
-            setEmail(text);
-            clearError('email');
-          }}
-          error={errors.email}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
 
-        <InputField
-          label="Contraseña"
-          iconName="lock-closed-outline"
-          placeholder="Ingresá tu contraseña"
-          value={password}
-          onChangeText={(text: string) => {
-            setPassword(text);
-            clearError('password');
-          }}
-          error={errors.password}
-          secureTextEntry={!showPassword}
-          showPasswordToggle={true}
-          isPasswordVisible={showPassword}
-          onTogglePassword={() => setShowPassword(!showPassword)}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+      <Formik
+        initialValues={{ email: '', password: '' }}
+        validationSchema={LoginSchema}
+        onSubmit={handleLogin}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting }) => (
+          <FormContainer>
+            
+            <InputField
+              label="Email"
+              iconName="mail-outline"   // Ícono de sobre
+              placeholder="Ingresá tu email"
+              value={values.email}
+              onChangeText={handleChange('email')}
+              onBlur={handleBlur('email')}
+              error={touched.email ? errors.email : undefined}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
-        <AuthButton
-          title="Iniciar sesión"
-          onPress={handleLogin}
-          loading={loading}
-        />
+            
+            <InputField
+              label="Contraseña"
+              iconName="lock-closed-outline"  // Ícono de candado
+              placeholder="Ingresá tu contraseña"
+              value={values.password}
+              onChangeText={handleChange('password')}
+              onBlur={handleBlur('password')}
+              error={touched.password ? errors.password : undefined}
+              secureTextEntry={!showPassword}
+              showPasswordToggle={true}        // Activa el icono de ojo
+              isPasswordVisible={showPassword}
+              onTogglePassword={() => setShowPassword(!showPassword)}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
-        <LinkButton
-          normalText="¿No tienes cuenta?"
-          linkText="Registrarse"
-          onPress={() => navigation.navigate('Register')}
-        />
-      </FormContainer>
+            
+            <AuthButton
+              title="Iniciar sesión"
+              onPress={handleSubmit as any}
+              loading={isSubmitting}
+            />
+
+            
+            <LinkButton
+              normalText="¿No tienes cuenta?"
+              linkText="Registrarse"
+              onPress={() => navigation.navigate('Register')}
+            />
+          </FormContainer>
+        )}
+      </Formik>
     </AuthContainer>
   );
 };

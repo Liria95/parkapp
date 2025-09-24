@@ -3,6 +3,8 @@ import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from 'styled-components/native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 // Componentes reutilizables
 import AppHeader from '../components/common/AppHeader';
@@ -12,7 +14,6 @@ import InputField from '../components/common/InputField';
 import LocationCard from '../components/registration/LocationCard';
 import UserFoundCard from '../components/registration/UserFoundCard';
 import ToggleSwitch from '../components/common/ToggleSwitch';
-import AuthButton from '../components/common/AuthButton';
 import AppModal from '../components/common/AppModal';
 import { Container } from '../components/shared/StyledComponents';
 
@@ -20,15 +21,8 @@ import { Container } from '../components/shared/StyledComponents';
 import { colors } from '../constants/colors';
 import { getResponsiveSize, getDynamicSpacing } from '../utils/ResponsiveUtils';
 
-// Hooks
-import { useFormValidation } from '../hooks/useFormValidation';
-
 // Tipos
 type RootStackParamList = {
-  AdminDashboard: undefined;
-  Espacios: undefined;
-  GestionUsuarios: undefined;
-  Infracciones: undefined;
   RegistroManual: undefined;
 };
 
@@ -64,7 +58,7 @@ const ActionsContainer = styled.View`
 
 const ActionButton = styled.TouchableOpacity<{ primary?: boolean }>`
   flex: 1;
-  background-color: ${props => props.primary ? colors.primary : colors.gray};
+  background-color: ${props => (props.primary ? colors.primary : colors.gray)};
   padding: ${getDynamicSpacing(15)}px;
   border-radius: ${getResponsiveSize(8)}px;
   align-items: center;
@@ -107,19 +101,22 @@ const ModalSpacePrice = styled.Text`
   color: ${colors.primary};
 `;
 
+// Validación con Yup
+const RegistroSchema = Yup.object().shape({
+  patente: Yup.string()
+    .required('La patente es obligatoria')
+    .min(6, 'Debe tener al menos 6 caracteres'),
+});
+
 const RegistroManualScreen: React.FC = () => {
   const navigation = useNavigation<RegistroManualScreenNavigationProp>();
-  
-  const [patente, setPatente] = useState<string>('');
-  const [patenteValidada, setPatenteValidada] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [espacioSeleccionado, setEspacioSeleccionado] = useState<EspacioSeleccionado | null>(null);
-  const [usuarioEncontrado, setUsuarioEncontrado] = useState<UsuarioEncontrado | null>(null);
+
+  const [espacioSeleccionado, setEspacioSeleccionado] =
+    useState<EspacioSeleccionado | null>(null);
+  const [usuarioEncontrado, setUsuarioEncontrado] =
+    useState<UsuarioEncontrado | null>(null);
   const [notificarUsuario, setNotificarUsuario] = useState<boolean>(true);
   const [showEspaciosModal, setShowEspaciosModal] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const { errors, validateForm, clearError } = useFormValidation();
 
   // Mock data espacios disponibles
   const espaciosDisponibles = [
@@ -128,102 +125,33 @@ const RegistroManualScreen: React.FC = () => {
     { id: '3', numero: 'C-012', ubicacion: 'CALLE CORRIENTES 789', tarifaPorHora: 60 },
   ];
 
-  const handleScanCamera = () => {
-    Alert.alert(
-      'Escanear Patente',
-      'Funcionalidad de cámara para escanear patente automáticamente',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Simular Escaneo', 
-          onPress: () => {
-            setPatente('ABC123');
-            setPatenteValidada(true);
-            validarPatente('ABC123');
-          }
-        }
-      ]
-    );
-  };
-
-  const handlePatenteChange = (text: string) => {
-    setPatente(text.toUpperCase());
-    setPatenteValidada(false);
-    clearError('patente');
-    
-    if (text.length >= 6) {
-      validarPatente(text);
-    } else {
-      setUsuarioEncontrado(null);
-    }
-  };
-
-  const validarPatente = (patente: string) => {
-    // Simular validación de patente
-    setTimeout(() => {
-      setPatenteValidada(true);
-      buscarUsuarioExistente(patente);
-    }, 1000);
-  };
-
-  const buscarUsuarioExistente = (patente: string) => {
-    // Simular búsqueda en base de datos
-    const usuarioMock: UsuarioEncontrado = {
-      id: '1',
-      nombre: 'JUAN PÉREZ',
-      email: 'juan.perez@email.com',
-      telefono: '+54 9 11 1234-5678',
-      saldo: 1250.00,
-    };
-    
-    if (patente === 'ABC123') {
-      setUsuarioEncontrado(usuarioMock);
-    } else {
-      setUsuarioEncontrado(null);
-    }
-  };
-
-  const handleSeleccionarEspacio = (espacio: EspacioSeleccionado) => {
-    setEspacioSeleccionado(espacio);
-    setShowEspaciosModal(false);
-  };
-
-  const handleRegistrar = async (): Promise<void> => {
-    const isValid = validateForm({ patente }, {
-      patente: { required: true, minLength: 6 },
-    });
-
+  const handleRegistrar = (
+    values: { patente: string; searchQuery: string },
+    resetForm: () => void
+  ) => {
     if (!espacioSeleccionado) {
       Alert.alert('Error', 'Debe seleccionar una ubicación');
       return;
     }
 
-    if (isValid) {
-      setLoading(true);
-      
-      // Simular registro
-      setTimeout(() => {
-        Alert.alert(
-          'Registro Exitoso',
-          `Vehículo ${patente} registrado en ${espacioSeleccionado.ubicacion}\n${notificarUsuario ? 'Notificación enviada al usuario' : 'Sin notificación'}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                // Reset form
-                setPatente('');
-                setPatenteValidada(false);
-                setEspacioSeleccionado(null);
-                setUsuarioEncontrado(null);
-                setNotificarUsuario(true);
-                setSearchQuery('');
-                setLoading(false);
-              }
-            }
-          ]
-        );
-      }, 1500);
-    }
+    // Simular registro exitoso
+    Alert.alert(
+      'Registro Exitoso',
+      `Vehículo ${values.patente} registrado en ${espacioSeleccionado.ubicacion}\n${
+        notificarUsuario ? 'Notificación enviada al usuario' : 'Sin notificación'
+      }`,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            resetForm();
+            setEspacioSeleccionado(null);
+            setUsuarioEncontrado(null);
+            setNotificarUsuario(true);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -235,59 +163,70 @@ const RegistroManualScreen: React.FC = () => {
         showBackButton={true}
       />
 
-      <ContentScrollView showsVerticalScrollIndicator={false}>
-        <ScannerSection onCameraPress={handleScanCamera} />
+      <Formik
+        initialValues={{ patente: '', searchQuery: '' }}
+        validationSchema={RegistroSchema}
+        onSubmit={(values, { resetForm }) => handleRegistrar(values, resetForm)}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          <ContentScrollView showsVerticalScrollIndicator={false}>
+            <ScannerSection
+              onCameraPress={() => {
+                handleChange('patente')('ABC123');
+              }}
+            />
 
-        <FormContainer paddingHorizontal={20}>
-          <InputField
-            label="Patente del Vehículo"
-            iconName="car-outline"
-            placeholder="ABC123"
-            value={patente}
-            onChangeText={handlePatenteChange}
-            error={errors.patente}
-            autoCapitalize="characters"
-            maxLength={10}
-          />
-        </FormContainer>
+            <FormContainer paddingHorizontal={20}>
+              <InputField
+                label="Patente del Vehículo"
+                iconName="car-outline"
+                placeholder="ABC123"
+                value={values.patente}
+                onChangeText={handleChange('patente')}
+                onBlur={handleBlur('patente')}
+                error={touched.patente && errors.patente ? errors.patente : ''}
+                autoCapitalize="characters"
+                maxLength={10}
+              />
+            </FormContainer>
 
-        <LocationCard 
-          espacioSeleccionado={espacioSeleccionado}
-          onLocationPress={() => setShowEspaciosModal(true)}
-        />
+            <LocationCard
+              espacioSeleccionado={espacioSeleccionado}
+              onLocationPress={() => setShowEspaciosModal(true)}
+            />
 
-        <FormContainer paddingHorizontal={20}>
-          <InputField
-            label="Buscar usuario existente (opcional)"
-            iconName="search-outline"
-            placeholder="Email o teléfono del usuario"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </FormContainer>
+            <FormContainer paddingHorizontal={20}>
+              <InputField
+                label="Buscar usuario existente (opcional)"
+                iconName="search-outline"
+                placeholder="Email o teléfono del usuario"
+                value={values.searchQuery}
+                onChangeText={handleChange('searchQuery')}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </FormContainer>
 
-        {usuarioEncontrado && (
-          <UserFoundCard usuario={usuarioEncontrado} />
+            {usuarioEncontrado && <UserFoundCard usuario={usuarioEncontrado} />}
+
+            <ToggleSwitch
+              title="Notificar al usuario"
+              subtitle="Enviar SMS/email con detalles"
+              value={notificarUsuario}
+              onToggle={() => setNotificarUsuario(!notificarUsuario)}
+            />
+
+            <ActionsContainer>
+              <ActionButton onPress={() => navigation.goBack()}>
+                <ActionButtonText>Cancelar</ActionButtonText>
+              </ActionButton>
+              <ActionButton primary onPress={() => handleSubmit()}>
+                <ActionButtonText>Registrar</ActionButtonText>
+              </ActionButton>
+            </ActionsContainer>
+          </ContentScrollView>
         )}
-
-        <ToggleSwitch
-          title="Notificar al usuario"
-          subtitle="Enviar SMS/email con detalles"
-          value={notificarUsuario}
-          onToggle={() => setNotificarUsuario(!notificarUsuario)}
-        />
-
-        <ActionsContainer>
-          <ActionButton onPress={() => navigation.goBack()}>
-            <ActionButtonText>Cancelar</ActionButtonText>
-          </ActionButton>
-          <ActionButton primary onPress={handleRegistrar}>
-            <ActionButtonText>Registrar</ActionButtonText>
-          </ActionButton>
-        </ActionsContainer>
-      </ContentScrollView>
+      </Formik>
 
       {/* Modal Selección de Espacios */}
       <AppModal
@@ -298,7 +237,7 @@ const RegistroManualScreen: React.FC = () => {
         {espaciosDisponibles.map(espacio => (
           <ModalSpaceItem
             key={espacio.id}
-            onPress={() => handleSeleccionarEspacio(espacio)}
+            onPress={() => setEspacioSeleccionado(espacio)}
           >
             <ModalSpaceTitle>Espacio {espacio.numero}</ModalSpaceTitle>
             <ModalSpaceInfo>{espacio.ubicacion}</ModalSpaceInfo>
