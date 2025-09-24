@@ -4,11 +4,18 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
 import styled from 'styled-components/native';
 
-// Importar pantallas
+// Importar pantallas AUTH
 import LoginScreen from './screens/auth/LoginScreen';
 import RegisterScreen from './screens/auth/RegisterScreen';
+
+// Importar TODAS las pantallas ADMIN
 import AdminDashboard from './screens/admin/AdminDashboard';
 import AdminDrawer from './screens/admin/AdminDrawer';
+import EspaciosScreen from './screens/admin/EspaciosScreen';
+import GestionUsuariosScreen from './screens/admin/GestionUsuariosScreen';
+import InfraccionesScreen from './screens/admin/InfraccionesScreen';
+import RegistroManualScreen from './screens/admin/RegistroManualScreen';
+import AdminPanel from './screens/admin/AdminPanel';
 
 // NUEVO: Importar navegación de usuario
 import NavegadorTabsUsuario from './screens/user/navegacion/NavegadorTabs';
@@ -27,6 +34,11 @@ export type AuthStackParamList = {
 export type AdminStackParamList = {
   AdminDashboard: undefined;
   AdminDrawer: undefined;
+  Espacios: undefined;
+  GestionUsuarios: undefined;
+  Infracciones: undefined;
+  RegistroManual: undefined;
+  AdminPanel: undefined;
 };
 
 export type UserStackParamList = {
@@ -37,7 +49,6 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const AdminStack = createNativeStackNavigator<AdminStackParamList>();
 const UserStack = createNativeStackNavigator<UserStackParamList>();
 
-// Componente de loading
 const LoadingContainer = styled.View`
   flex: 1;
   justify-content: center;
@@ -51,7 +62,6 @@ const LoadingScreen = () => (
   </LoadingContainer>
 );
 
-// Stack de autenticación
 const AuthNavigator = () => (
   <AuthStack.Navigator 
     initialRouteName="Login"
@@ -73,15 +83,29 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
-// Stack para Admin
+// ACTUALIZAR: Stack para Admin con TODAS las pantallas
 const AdminNavigator = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="AdminDashboard" component={AdminDashboard} />
+  <AdminStack.Navigator 
+    screenOptions={{
+      headerShown: false,
+      gestureEnabled: true,
+      animation: 'slide_from_right',
+    }}
+  >
+    <AdminStack.Screen 
+      name="AdminDashboard" 
+      component={AdminDashboard}
+      options={{ gestureEnabled: false }}
+    />
     <AdminStack.Screen name="AdminDrawer" component={AdminDrawer} />
+    <AdminStack.Screen name="Espacios" component={EspaciosScreen} />
+    <AdminStack.Screen name="GestionUsuarios" component={GestionUsuariosScreen} />
+    <AdminStack.Screen name="Infracciones" component={InfraccionesScreen} />
+    <AdminStack.Screen name="RegistroManual" component={RegistroManualScreen} />
+    <AdminStack.Screen name="AdminPanel" component={AdminPanel} />
   </AdminStack.Navigator>
 );
 
-// Stack para Usuario Final
 const UserNavigator = () => (
   <UsuarioProvider>
     <UserStack.Navigator screenOptions={{ headerShown: false }}>
@@ -90,7 +114,6 @@ const UserNavigator = () => (
   </UsuarioProvider>
 );
 
-// Componente que decide qué navegación mostrar
 const RootNavigator = () => {
   const { state } = useContext(AuthContext);
 
@@ -109,7 +132,6 @@ const RootNavigator = () => {
     return <AuthNavigator />;
   }
 
-  // Decide navegación según tipo de usuario
   if (state.user?.type === 'admin') {
     return <AdminNavigator />;
   } else {
@@ -117,7 +139,6 @@ const RootNavigator = () => {
   }
 };
 
-// App principal
 const App: React.FC = () => {
   return (
     <AuthProvider>
