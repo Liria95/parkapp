@@ -4,11 +4,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, ActivityIndicator } from 'react-native';
 import styled from 'styled-components/native';
 
-// Importar pantallas AUTH
+// Importacion pantallas AUTH
 import LoginScreen from './screens/auth/LoginScreen';
 import RegisterScreen from './screens/auth/RegisterScreen';
 
-// Importar TODAS las pantallas ADMIN
+// Importacion pantallas ADMIN
 import AdminDashboard from './screens/admin/AdminDashboard';
 import AdminDrawer from './screens/admin/AdminDrawer';
 import EspaciosScreen from './screens/admin/EspaciosScreen';
@@ -17,7 +17,7 @@ import InfraccionesScreen from './screens/admin/InfraccionesScreen';
 import RegistroManualScreen from './screens/admin/RegistroManualScreen';
 import AdminPanel from './screens/admin/AdminPanel';
 
-// NUEVO: Importar navegación de usuario
+// Importacion navegación de usuario
 import NavegadorTabsUsuario from './screens/user/navegacion/NavegadorTabs';
 
 // Context
@@ -83,7 +83,7 @@ const AuthNavigator = () => (
   </AuthStack.Navigator>
 );
 
-// ACTUALIZAR: Stack para Admin con TODAS las pantallas
+//Stack para Admin con TODAS las pantallas
 const AdminNavigator = () => (
   <AdminStack.Navigator 
     screenOptions={{
