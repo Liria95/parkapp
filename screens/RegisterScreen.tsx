@@ -27,7 +27,6 @@ type RegisterScreenNavigationProp = NativeStackNavigationProp<
 interface RegisterScreenProps {
   navigation: RegisterScreenNavigationProp;
 }
-
 //  Esquema de validación con Yup
 const RegisterSchema = Yup.object().shape({
   fullName: Yup.string()
