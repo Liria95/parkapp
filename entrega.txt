@@ -1,0 +1,14 @@
+ACTIVIDAD N° 2 - Diseño de Interfaz de Aplicación
+DESARROLLO PARA MÓVILES - 2025
+Tecnicatura Universitaria en Desarrollo Web
+UNER - Facultad de Ciencias de la Administración
+
+INTEGRANTES DEL GRUPO
+
+LIRIA OLIVERA
+ANABELLA VENTAVOLI
+MONICA MARIA ZULUAGA PELAEZ
+MARIANELA DAGATTI
+
+REPOSITORIO DEL PROYECTO
+Link GitHub: https://github.com/Liria95/parkapp.git
