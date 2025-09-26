@@ -127,18 +127,27 @@ parkapp/
 
 ### 👤 Usuario Final
 <p align="center">
- 
-  <img src="./assets/screenshots/login usuario final.png" alt="Pantalla de Login usuario final " width="220"/>
   <img src="./assets/screenshots/register.png" alt="Pantalla de Registro" width="220"/>
+  <img src="./assets/screenshots/login usuario final.png" alt="Pantalla de Login usuario final " width="220"/>
   <img src="./assets/screenshots/mapa.png" alt="Mapa Interactivo" width="220"/>
+  <img src="./assets/screenshots/registrar vehiculo.png" alt="Pantalla de Registrar vehiculo" width="220"/>    
+   <img src="./assets/screenshots/estacionamiento activo.png" alt="Estacionamiento activo" width="220"/>
+   <img src="./assets/screenshots/perfil usuario.png" alt="perfil usuario" width="220"/>
   
 </p>
 
 ### 🛠️ Administrador
 <p align="center">
-<img src="./assets/screenshots/login admin.png" alt="Pantalla de Login admin" width="220"/>
+  <img src="./assets/screenshots/login admin.png" alt="Pantalla de Login admin" width="220"/>
   <img src="./assets/screenshots/dashboard.png" alt="Dashboard Admin" width="220"/>
   <img src="./assets/screenshots/infracciones.png" alt="Gestión de Infracciones" width="220"/>
+
+  <img src="./assets/screenshots/gestion saldo.png" alt="Gestion Saldo" width="220"/>
+  <img src="./assets/screenshots/crear infraccion.png" alt="Crear infraccion" width="220"/>
+  <img src="./assets/screenshots/gestion de espacios.png" alt="gestion de espacios" width="220"/>
+  <img src="./assets/screenshots/gestion usuario todos.png" alt="gestion usuario todos" width="220"/>
+  <img src="./assets/screenshots/gestion usuario inactivo.png" alt="gestion usuario inactivo" width="220"/>
+  <img src="./assets/screenshots/gestion usuario activo.png" alt="gestion usuario activo" width="220"/>
 </p>
 
 
