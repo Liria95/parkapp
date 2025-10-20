@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
+import { useFormik } from 'formik'; 
+import * as Yup from 'yup'; 
 
 // Componentes reutilizables
 import AuthContainer from '../../components/auth/AuthContainer';
@@ -10,7 +12,6 @@ import LogoHeader from '../../components/common/LogoHeader';
 import LinkButton from '../../components/common/LinkButton';
 
 // Hooks y servicios
-import { useFormValidation } from '../../hooks/useFormValidation';
 import { AuthService } from '../../services/AuthService';
 
 import { AUTH_ACTIONS, AuthContext } from '../../components/shared/Context/AuthContext';
@@ -24,9 +25,14 @@ interface LoginScreenProps {
   navigation: NavigationProp;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+// Interfaz para los valores del formulario (para tipado TypeScript)
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
-  const {state, dispatch} = useContext(AuthContext);
+const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+  const { state, dispatch } = useContext(AuthContext);
 
   // Dentro de LoginScreen
   useEffect(() => {
@@ -37,51 +43,55 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     }
   }, [state]);
 
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-  const { errors, validateForm, clearError } = useFormValidation();
 
-  const handleLogin = async (): Promise<void> => {
-    const isValid = validateForm(
-      { email, password },
-      {
-        email: { required: true, email: true },
-        password: { required: true, minLength: 6 },
-      }
-    );
+  // Esquema de validación con Yup
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      .email('Email inválido')
+      .required('El email es obligatorio'),
+    password: Yup.string()
+      .min(6, 'La contraseña debe tener al menos 6 caracteres')
+      .required('La contraseña es obligatoria'),
+  });
 
-    if (isValid) {
+  // Configuración de Formik
+  const formik = useFormik<LoginFormValues>({  
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: async (values: LoginFormValues) => { 
       setLoading(true);
-
       try {
-        const result = await AuthService.login(email, password);
+        const result = await AuthService.login(values.email, values.password);
 
         if (result.success && result.user) {
           // Dispara el tipo de la acción para guardar al usuario en el contexto
-          dispatch({ 
-            type: AUTH_ACTIONS.LOGIN, 
+          dispatch({
+            type: AUTH_ACTIONS.LOGIN,
             payload: {
-              token: "TOKEN", // Placeholder hasta que AuthService devuelva tokens reales
-              refreshToken: "REFRESH_TOKEN", // Placeholder hasta que AuthService devuelva tokens reales
+              token: "TOKEN", 
+              refreshToken: "REFRESH_TOKEN", 
               user: result.user,
             }
           });
 
-          // Ya no manejamos navegación manual, AuthContext decide automáticamente
+          
           if (result.isAdmin) {
             console.log('Login Admin exitoso:', result.user?.name);
-            // AuthContext navegará automáticamente a AdminNavigator
+            
           } else {
             console.log('Login Usuario exitoso:', result.user?.name);
-            // AuthContext navegará automáticamente a UserNavigator
+            
           }
         } else {
           // Credenciales incorrectas
           Alert.alert(
-            'Error de login', 
-            result.message || 'Email o contraseña incorrectos', 
+            'Error de login',
+            result.message || 'Email o contraseña incorrectos',
             [{ text: 'OK' }]
           );
         }
@@ -90,24 +100,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       } finally {
         setLoading(false);
       }
-    } // cierra el isValid
-  }; // cierra la función handleLogin
+    },
+  });
 
   return (
     <AuthContainer>
       <LogoHeader title="ParkApp" />
-      
+
       <FormContainer>
         <InputField
           label="Email"
           iconName="mail-outline"
           placeholder="Ingresá tu email"
-          value={email}
-          onChangeText={(text: string) => {
-            setEmail(text);
-            clearError('email');
-          }}
-          error={errors.email}
+          value={formik.values.email}
+          onChangeText={formik.handleChange('email')}
+          error={formik.touched.email && formik.errors.email ? formik.errors.email : undefined}
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -117,12 +124,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           label="Contraseña"
           iconName="lock-closed-outline"
           placeholder="Ingresá tu contraseña"
-          value={password}
-          onChangeText={(text: string) => {
-            setPassword(text);
-            clearError('password');
-          }}
-          error={errors.password}
+          value={formik.values.password}
+          onChangeText={formik.handleChange('password')}
+          error={formik.touched.password && formik.errors.password ? formik.errors.password : undefined}
           secureTextEntry={!showPassword}
           showPasswordToggle={true}
           isPasswordVisible={showPassword}
@@ -133,8 +137,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
 
         <AuthButton
           title="Iniciar sesión"
-          onPress={handleLogin}
+          onPress={() => formik.handleSubmit()} // Usa handleSubmit de Formik
           loading={loading}
+          disabled={loading || !formik.isValid} // Deshabilita si no es válido o está cargando
         />
 
         <LinkButton
