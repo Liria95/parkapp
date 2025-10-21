@@ -1,41 +1,42 @@
 import * as SecureStore from 'expo-secure-store';
-import { User } from '../services/AuthService';
 
-const STORAGE_NAME = "parkapp"
+const USER_KEY = 'user_data';
 
-export const STORAGE_KEYS = {
-    JWT_TOKEN: 'JWTtOKEN',
-    USER: 'user',
-    JWT_REFRESH_TOKEN: 'jwtRefreshToken',
-    DEVICE_ID: 'deviceId'
+interface UserData {
+    user: any;
+    token?: string;
+    refreshToken?: string;
 }
 
-// Guardar item
-const _setItem = (key: string, value: string, options?: any) =>
-   SecureStore.setItemAsync(`${STORAGE_NAME}${key}`, value, options);
+export async function setUser(userData: UserData): Promise<void> {
+    try {
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(userData));
+        console.log('Datos guardados en SecureStore exitosamente');
+    } catch (error) {
+        console.error('Error guardando en SecureStore:', error);
+        throw error;
+    }
+}
 
-//Obtener item
-const _getItem = (key: string) => 
-    SecureStore.getItemAsync(`${STORAGE_NAME}${key}`);
+export async function getUser(): Promise<UserData | null> {
+    try {
+        const userData = await SecureStore.getItemAsync(USER_KEY);
+        if (userData) {
+            return JSON.parse(userData);
+        }
+        return null;
+    } catch (error) {
+        console.error('Error leyendo de SecureStore:', error);
+        return null;
+    }
+}
 
-//elimina item
-const _deleteItem = (key: string) =>
-    SecureStore.deleteItemAsync(`${STORAGE_NAME}${key}`);
-
-
-const setUser = (user: User) => 
-    _setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-
-//función asincrónica q devuelve una promesa de algo
-const getUser = async (): Promise<User | null> => {
-    const user = await _getItem(STORAGE_KEYS.USER);
-    return user ? JSON.parse(user) : null;
-};
-
-const deleteUser = () => _deleteItem(STORAGE_KEYS.USER);
- 
-export { setUser, getUser, deleteUser }
-
-
-
-
+export async function deleteUser(): Promise<void> {
+    try {
+        await SecureStore.deleteItemAsync(USER_KEY);
+        console.log('Datos eliminados de SecureStore exitosamente');
+    } catch (error) {
+        console.error('Error eliminando de SecureStore:', error);
+        throw error;
+    }
+}
